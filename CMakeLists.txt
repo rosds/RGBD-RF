@@ -25,3 +25,12 @@ add_definitions("-Wall -g")
 
 add_subdirectory(src)
 
+FIND_PACKAGE(Doxygen)
+if (DOXYGEN_FOUND)
+    configure_file(Doxyfile.in
+        ${PROJECT_BINARY_DIR}/Doxyfile  @ONLY IMMEDIATE)
+
+    add_custom_target (documentation
+                       COMMAND ${DOXYGEN_EXECUTABLE} ${PROJECT_BINARY_DIR}/Doxyfile
+                       SOURCES ${PROJECT_BINARY_DIR}/Doxyfile)
+endif()
