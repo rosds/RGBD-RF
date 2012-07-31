@@ -20,3 +20,13 @@ directory:
     cd build
     cmake ..
     make
+
+Documentation
+=============
+
+To build the documentation you need to have Doxygen installed. The you
+just need to execute this:
+
+    make documentation
+
+in the build directory.
