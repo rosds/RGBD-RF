@@ -9,7 +9,7 @@
 # ifndef IMAGE_H
 # define IMAGE_H
 
-# include "common.h"
+# include <RGBD-RF/common.hpp>
 # include "PixelInfo.h"
 
 # define NOT_FOUND -1

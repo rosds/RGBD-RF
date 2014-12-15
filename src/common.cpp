@@ -1,4 +1,4 @@
-# include "common.h"
+# include <RGBD-RF/common.hpp>
 
 /**
  *  randFloat

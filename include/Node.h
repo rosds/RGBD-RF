@@ -1,8 +1,9 @@
 # ifndef NODE_H
 # define NODE_H
 
-# include "common.h"
-# include "SplitCandidate.h"
+# include <RGBD-RF/common.hpp>
+
+# include <SplitCandidate.h>
 
 using namespace std;
 

@@ -13,25 +13,25 @@
 // C++ include headers
 // ----------------------------------------------------------------------
 
-# include <stdlib.h>
-# include <stdio.h>
-# include <vector>
-# include <map>
-# include <utility>
-# include <ctime>
-# include <sys/time.h>
-# include <math.h>
-# include <stack>
-# include <string>
-# include <sstream>
-# include <iostream>
-# include <pthread.h>
-# include <mpi.h>
-# include <algorithm>
-# include <dirent.h>
-# include <highgui.h>
-# include <cv.h>
-# include <queue>
+#include <stdlib.h>
+#include <stdio.h>
+#include <vector>
+#include <map>
+#include <utility>
+#include <ctime>
+#include <sys/time.h>
+#include <math.h>
+#include <stack>
+#include <string>
+#include <sstream>
+#include <iostream>
+#include <pthread.h>
+#include <mpi.h>
+#include <algorithm>
+#include <dirent.h>
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <queue>
 
 using namespace std;
 using namespace cv;

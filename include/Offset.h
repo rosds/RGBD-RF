@@ -10,7 +10,7 @@
 # ifndef OFFSET_H
 # define OFFSET_H
 
-# include "common.h"
+# include <RGBD-RF/common.hpp>
 
 # define MILLIMETERS_CONVERT 1000
 

@@ -1,7 +1,7 @@
 # ifndef RANDOM_FOREST_H
 # define RANDOM_FOREST_H
 
-# include "common.h"
+# include <RGBD-RF/common.hpp>
 # include "Offset.h"
 # include "PixelInfo.h"
 # include "SplitCandidate.h"

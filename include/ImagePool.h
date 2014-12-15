@@ -1,7 +1,7 @@
 # ifndef IMAGEPOOL_H
 # define IMAGEPOOL_H
 
-# include "common.h"
+# include <RGBD-RF/common.hpp>
 # include "Image.h"
 # include "PixelInfo.h"
 

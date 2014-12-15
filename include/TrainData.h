@@ -1,7 +1,7 @@
 # ifndef IMAGE_TRAIN_SET_H
 # define IMAGE_TRAIN_SET_H
 
-# include "common.h"
+# include <RGBD-RF/common.hpp>
 # include "PixelInfo.h"
 # include "ImagePool.h"
 

@@ -2,7 +2,7 @@
 # ifndef SPLITCANDIDATE_H
 # define SPLITCANDIDATE_H
 
-# include "common.h"
+# include <RGBD-RF/common.hpp>
 # include "Offset.h"
 
 class SplitCandidate {

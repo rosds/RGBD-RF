@@ -2,7 +2,7 @@
 # ifndef PIXELINFO_H
 # define PIXELINFO_H
 
-# include "common.h"
+# include <RGBD-RF/common.hpp>
 # include "Offset.h"
 
 class PixelInfo {
