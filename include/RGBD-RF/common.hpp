@@ -33,14 +33,13 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <queue>
 
-using namespace std;
 using namespace cv;
 
 // ----------------------------------------------------------------------
 // Some typedefs
 // ----------------------------------------------------------------------
 
-typedef pair <unsigned short, unsigned short> Coord;
+typedef std::pair<unsigned short, unsigned short> Coord;
 typedef unsigned char Label;
 
 // ----------------------------------------------------------------------

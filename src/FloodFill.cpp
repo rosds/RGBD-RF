@@ -94,8 +94,8 @@ int fill(Mat& src,
     static int dx[] = {-1,0,1,0};
     static int dy[] = {0,1,0,-1};
 
-    queue<pair<int, int> > q;
-    pair <int, int> elem;
+    std::queue<std::pair<int, int> > q;
+    std::pair<int, int> elem;
 
     int size = 1;
 
@@ -118,7 +118,7 @@ int fill(Mat& src,
                 && (Scalar(src.at<Vec3b>(nx,ny)) == original_color))
         {
             assign_color(src,forbidden,nx,ny,new_color,labMask);
-            q.push(pair<int, int>(nx, ny));
+            q.push(std::pair<int, int>(nx, ny));
             size++;
         }
     }
@@ -137,7 +137,7 @@ int fill(Mat& src,
                     && (Scalar(src.at<Vec3b>(nx,ny)) == original_color))
             {
                 assign_color(src,forbidden,nx,ny,new_color,labMask);
-                q.push(pair<int, int>(nx, ny));
+                q.push(std::pair<int, int>(nx, ny));
                 size++;
             }
         }
@@ -162,8 +162,8 @@ int flood_fill(Mat& src, Mat& v, int x, int y, int *col_c)
     static int dx[] = {-1,0,1,0};
     static int dy[] = {0,1,0,-1};
 
-    queue<pair<int, int> > q;
-    pair <int, int> elem;
+    std::queue<std::pair<int, int> > q;
+    std::pair<int, int> elem;
 
     v.at<uchar>(x,y) = 1;
     int size = 1;
@@ -182,7 +182,7 @@ int flood_fill(Mat& src, Mat& v, int x, int y, int *col_c)
                && ( v.at<uchar>( nx, ny ) == 0 )) 
             {
                 v.at<uchar>(nx,ny) = 1;
-                q.push(pair<int, int>(nx, ny));
+                q.push(std::pair<int, int>(nx, ny));
                 size++;
             }
 
@@ -212,7 +212,7 @@ int flood_fill(Mat& src, Mat& v, int x, int y, int *col_c)
                    && ( v.at<uchar>( nx, ny ) == 0)) 
                 {
                     v.at<uchar>(nx,ny) = 1;
-                    q.push(pair<int, int>(nx, ny));
+                    q.push(std::pair<int, int>(nx, ny));
                     size++;
                 }
                 if (current_color != neighbor_color) {
@@ -367,7 +367,7 @@ float flood_fill_proc_test (Mat& src,
     }
     
     preclasif = (float)positive / (float)noNullPixels;
-    cout << "preclasif: " << preclasif  << endl;
+    std::cout << "preclasif: " << preclasif  << std::endl;
 
 
     for (int i = 0; i < iter; i++) {
@@ -391,9 +391,9 @@ float flood_fill_proc_test (Mat& src,
         }
     }
     clasif = (float)positive / (float)noNullPixels;
-    cout << "classif: " << clasif << endl;
+    std::cout << "classif: " << clasif << std::endl;
     
-    cout << "diff: " << clasif - preclasif << endl;
+    std::cout << "diff: " << clasif - preclasif << std::endl;
     return (float)positive / (float)noNullPixels;
 
 }

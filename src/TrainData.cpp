@@ -1,19 +1,16 @@
 # include "TrainData.h"
 
 
-TrainData :: TrainData () 
-{
-    pixelC = vector <PixelInfo> ();
+TrainData::TrainData() {
+    pixelC = std::vector<PixelInfo>();
 }
 
 /**
  * Creates an empty vector of trainImgNum x numPixels
  */
  //CHECK
-TrainData :: TrainData (int trainImgNum, int numPixels)
-{
-    pixelC = vector <PixelInfo> (trainImgNum * numPixels);
-    cout << "TAMAÑO RANK != 0 " << pixelC.size() << endl;
+TrainData :: TrainData (int trainImgNum, int numPixels) {
+    pixelC = std::vector<PixelInfo>(trainImgNum * numPixels);
 }
 
 /**
@@ -48,32 +45,11 @@ TrainData :: TrainData (int numPixels,
             }
         }
     }
-    cout << "TAMAÑO RANK = 0 " << pixelC.size() << endl;
-/*
-    for (int i = 0; i < trainImgNum; i++) {
-
-        imgIdx = rand() % imgPool.poolSize();
-
-        if (byLabel == true) {
-            imgPool[imgIdx].getRandCoordByLabel(numPixels, pix, imgIdx);
-            pixelC.insert(pixelC.end(), pix.begin(), pix.end());
-
-        }
-        else {
-            for (j = 0; j < numPixels; j++) {
-                coord = imgPool[imgIdx].getRandomCoord();
-                pixelC.push_back( PixelInfo(coord, imgIdx) );
-            }
-        }
-    }
-*/
-
 }
 
 /**
  * Returns the number of pixels
  */
-int TrainData :: size ()
-{
-    return pixelC.size();
+int TrainData::size() {
+    return static_cast<int>(pixelC.size());
 }
