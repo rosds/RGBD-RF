@@ -4,16 +4,16 @@ project(RGBD-RF)
 
 # For use of mpi compiler instead of gcc
 find_package(OpenCV REQUIRED)
-find_package(MPI)
+find_package(MPI REQUIRED)
 FIND_PACKAGE(Doxygen)
 
-if(MPI_FOUND)
-include_directories(${MPI_INCLUDE_PATH})
-set(CMAKE_CXX_COMPILE_FLAGS ${CMAKE_CXX_COMPILE_FLAGS} 
-                            ${MPI_COMPILE_FLAGS})
-set(CMAKE_CXX_LINK_FLAGS ${CMAKE_CXX_LINK_FLAGS} 
-                         ${MPI_LINK_FLAGS})
-endif(MPI_FOUND)
+#if(MPI_FOUND)
+#include_directories(${MPI_INCLUDE_PATH})
+#set(CMAKE_CXX_COMPILE_FLAGS ${CMAKE_CXX_COMPILE_FLAGS} 
+                            #${MPI_COMPILE_FLAGS})
+#set(CMAKE_CXX_LINK_FLAGS ${CMAKE_CXX_LINK_FLAGS} 
+                         #${MPI_LINK_FLAGS})
+#endif(MPI_FOUND)
 
 
 if(DOXYGEN_FOUND)
@@ -37,6 +37,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
 
 include_directories(include /usr/local/include/libfreenect
     /usr/local/include/OpenEXR /usr/local
+    ${MPI_INCLUDE_PATH}
     ${OpenCV_INCLUDE_DIRS}
     ../parser/include)
 

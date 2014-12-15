@@ -10,6 +10,7 @@ set(RF_SRC common.cpp
            TrainData.cpp
            anyoption.cpp
            parseTreeArgs.cpp
-           FloodFill.cpp)
+           FloodFill.cpp
+           RGBDImage.cpp)
 
 add_library(rdf ${RF_SRC})

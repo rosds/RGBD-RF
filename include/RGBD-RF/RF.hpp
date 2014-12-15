@@ -1,10 +1,9 @@
-#ifndef RF_HH
-#define RF_HH
+#ifndef RGBD-RF_RF_HH
+#define RGBD-RF_RF_HH
 
-namespace crf {
+namespace rf {
 
-    class RF 
-    {
+    class RF {
     public:
         RF();
         ~RF();
@@ -12,6 +11,7 @@ namespace crf {
     private:
         /* data */
     };
-}
 
-#endif
+} // namespace rf
+
+#endif // RGBD-RF_RF_HH
