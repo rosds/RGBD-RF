@@ -1,7 +1,7 @@
 # ifndef FLOOD_FILL
 # define FLOOD_FILL
 
-# include <RGBD-RF/common.hpp>
+# include <rdf/common.h>
 
 extern unsigned char color[7][3];
 

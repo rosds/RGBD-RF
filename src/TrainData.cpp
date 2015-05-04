@@ -1,7 +1,6 @@
-# include "TrainData.h"
+#include <TrainData.h>
 
-
-TrainData::TrainData() {
+rdf::TrainData::TrainData() {
     pixelC = std::vector<PixelInfo>();
 }
 
@@ -9,24 +8,30 @@ TrainData::TrainData() {
  * Creates an empty vector of trainImgNum x numPixels
  */
  //CHECK
-TrainData :: TrainData (int trainImgNum, int numPixels) {
+rdf::TrainData :: TrainData (int trainImgNum, int numPixels) {
     pixelC = std::vector<PixelInfo>(trainImgNum * numPixels);
 }
 
-/**
- * Selects random pixels from the image imgId
- * numImg --> size subset of images
+/** \brief Constructor.
+ *
+ *  Sample random points from the range specified of images in the pool.
+ *
+ *  \param[in] numPixels Number of pixels to sample.
+ *  \param[in] startIdx Index from the Impage Pool.
+ *  \param[in] endIdx 
+ *  \param[in] byLabel  
  */
- // CHECK
-TrainData :: TrainData (int numPixels,
-                        ImagePool& imgPool,
-                        int startIdx,
-                        int endIdx,
-                        bool byLabel)
-{
+rdf::TrainData::TrainData(
+    int numPixels,
+    ImagePool& imgPool,
+    int startIdx,
+    int endIdx,
+    bool byLabel) {
+
     int j;
     int imgIdx;
-    Coord coord;
+    uint32_t row;
+    uint32_t col;
     vector <PixelInfo> pix;
     
     // iterates through image pool and get numImg subset of
@@ -37,19 +42,20 @@ TrainData :: TrainData (int numPixels,
             imgPool[imgIdx].getRandCoordByLabel(numPixels, pix, imgIdx);
             pixelC.insert(pixelC.end(), pix.begin(), pix.end());
 
-        }
-        else {
+        } else {
             for (j = 0; j < numPixels; j++) {
-                coord = imgPool[imgIdx].getRandomCoord();
-                pixelC.push_back( PixelInfo(coord, imgIdx) );
+
+                imgPool[imgIdx].getRandomCoord(row, col);
+                pixelC.push_back(PixelInfo(row, col, imgIdx));
+
             }
         }
     }
 }
 
-/**
- * Returns the number of pixels
+/** \brief Returns the number of pixels
+ *  \return The number of pixels.
  */
-int TrainData::size() {
+int rdf::TrainData::size() {
     return static_cast<int>(pixelC.size());
 }

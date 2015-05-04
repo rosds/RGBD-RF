@@ -1,30 +1,19 @@
-# include "ImagePool.h"
+#include <ImagePool.h>
 
-/**
- * Empty class constructor.
- */
-ImagePool :: ImagePool () 
-{
-    images = vector <TrainImage> ();
-}
-
-/**
- * Class constructor.
+/** \brief Constructor.
  * Loads the image content of the specified directory.
- * @param imgDir Pool image directory.
+ * \param[in] dirname Directory path to the image pool.
  */
- //CHECK
-ImagePool :: ImagePool (string imgDir)
-{
+rdf::ImagePool::ImagePool(std::string dirname) {
     int id = 0;
     DIR *pdir = NULL;
     struct dirent *pent = NULL;
     TrainImage img;
     vector <TrainImage> temp;
 
-    string fileName;
+    std::string fileName;
    
-    pdir = opendir (imgDir.c_str());
+    pdir = opendir(dirname.c_str());
 
     if (pdir == NULL) {
         printf ("Error! directory not initialized correctly\n");
@@ -36,7 +25,7 @@ ImagePool :: ImagePool (string imgDir)
             printf("Error: could not read directory\n");
         }       
 
-        fileName = imgDir + string (pent -> d_name);
+        fileName = dirname + string (pent -> d_name);
         
         // Checking extension
         if (fileName.substr(fileName.size() - 5, 5) == ".simg") {
@@ -53,75 +42,43 @@ ImagePool :: ImagePool (string imgDir)
             printf("File %s not loaded: Bad extension\n", fileName.c_str());
         }
     }
-    
-/*
-    // Disorder images array
-    while (temp.size() != 0) {
-        idx = rand() % temp.size();
-        images.push_back(temp[idx]);
-        temp.erase(temp.begin() + idx);
-    }*/
 }
 
-/**
- * Reorder the pool given a array of
- * index.
- * @param idxVec vector of indexes.
+
+/** \brief Reorder the pool given a array of index.
+ *  \param[in] index_vector The vector with the indices
  */
-void ImagePool :: poolReorder(vector <int> idxVec) 
-{
-    unsigned i;
-    vector <TrainImage> temp;
-    
-    for (i = 0; i < idxVec.size(); i++) {
-        temp.push_back(images[idxVec[i]]);
+void rdf::ImagePool::poolReorder(std::vector<int>& index_vector) {
+    std::vector<TrainImage> temp;
+    for (const auto index : index_vector) {
+        temp.push_back(images[index]);
     }
     images = temp;
 }
 
 
-/**
- * Returns the pool size.
- * @return Number of images in the pool.
- */
- //CHECK
-int ImagePool :: poolSize () 
-{
-    return images.size();
-}
-
-/**
- *  getLabel
- *
- *  this functions retrieves the pixel Label of an image given a
+/** \brief this functions retrieves the pixel Label of an image given a
  *  PixelInfo object.
  *
- *  @param pi is the pixel object.
- *  @return The pixel label.
+ *  \param[in] pi The pixel identification.
+ *  \return return The pixel label.
  */
- //CHECK
-Label ImagePool :: getLabel(PixelInfo& pi)
-{
+Label rdf::ImagePool::getLabel(const PixelInfo& pi) {
     return images[pi.id].getLabel(pi.x, pi.y);
 }
 
-/**
- *  getDepth
- *
- *  this functions retrieves the pixel depth of an image given a
+
+/** \brief this functions retrieves the pixel depth of an image given a
  *  PixelInfo object.
  *
- *  @param pi is the pixel object.
+ *  \param[in] pi The pixel identification.
  *  @return The pixel depth.
  */
- //CHECK
-unsigned ImagePool :: getDepth(PixelInfo& pi)
-{
+unsigned rdf::ImagePool::getDepth(const PixelInfo& pi) {
     return images[pi.id].getDepth(pi.x, pi.y);
 }
 
 //CHECK
-TrainImage* ImagePool :: getImgPtr(unsigned i)
-{
+rdf::TrainImage* rdf::ImagePool::getImgPtr(unsigned i) {
     return &(images[i]);
 }

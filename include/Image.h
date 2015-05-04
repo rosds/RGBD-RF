@@ -6,27 +6,26 @@
  *
  */
 
-# ifndef IMAGE_H
-# define IMAGE_H
+#ifndef RGBD_RF_IMAGE_HH__
+#define RGBD_RF_IMAGE_HH__
 
-# include <RGBD-RF/common.hpp>
-# include "PixelInfo.h"
+#include <string>
+#include <vector>
 
-# define NOT_FOUND -1
-# define DEFAULT_LABEL 0
-# define DEFAULT_DEPTH 0x3f3f3f3f
+#include <rdf/common.h>
+#include <PixelInfo.h>
 
-/**
- *  @class Image
- *
- *  @brief This class is an abstract class to treat two kind of images
+#define NOT_FOUND -1
+#define DEFAULT_LABEL 0
+#define DEFAULT_DEPTH 0x3f3f3f3f
+
+namespace rdf {
+
+/** \brief This class is an abstract class to treat two kind of images
  *  in the program (Train images and kinect images). Bought images
  *  contain depth information.
- *
  */
-
 class Image {
-
     public:
 
         // Aspect ration of the image
@@ -63,41 +62,20 @@ class Image {
  *  lile (bmp and exr) and write them in simple plane text files so we
  *  can read them directly py the constructor.
  */
-
 class TrainImage : public Image {
-
-    private:
-
-        vector <Label> pixelLabels;
-        vector <unsigned> pixelDepths;
-        vector <unsigned> I;
-        vector <unsigned short> J;
-
-
-        /** 
-         * Gets the index of the content array of the element in 
-         * position (x,y).
-         * @param x Pixel X-axis coordinate.
-         * @param y Pixel Y-axis coordinate.
-         * @return index of the content array or NOT_FOUND if pixel from 
-         * background.
-         */
-        int getIndex(const short & x, const short & y);
-
     public:
         int id;        
-        /**
-         * Image empty constructor.
-         */
-        TrainImage() {}
 
+        /** \brief Default empty constructor.
+         */
+        TrainImage() = default;
 
         /**
          *  Image constructor. Loads the image representation to memory.
          *  @param filename Filename of the input image in sparse 
          *  representation.
          */
-        TrainImage(const string& fileName);
+        TrainImage(const std::string& fileName);
 
         /**
          * Destructor
@@ -122,13 +100,13 @@ class TrainImage : public Image {
          */
         unsigned getDepth(const short & x, const short & y);
 
-        /**
-         *  getRandomCoord
-         *
-         *  This function get a random coordinate.
-         *  @return a random coordinate of pixel.
+        /** \brief Sample a random non-zero element from a Yale representation of a sparse 
+         *  matrix.
+         *  
+         *  \param[out] row Row of the element.
+         *  \param[out] col Col of the element.
          */
-        Coord getRandomCoord();
+        void getRandomCoord(uint32_t& row, uint32_t& col);
 
         /**
          *  getRandCoordByLabel
@@ -140,7 +118,7 @@ class TrainImage : public Image {
          *
          *  @return a random coordinate of pixel of the given label.
          */
-        void getRandCoordByLabel(int pixNum, vector<PixelInfo>& p, int imgId);
+        void getRandCoordByLabel(int pixNum, std::vector<PixelInfo>& p, int imgId);
 
         /**
          * Prints the content labels of the entire train image.
@@ -148,6 +126,24 @@ class TrainImage : public Image {
          * @param height Height of the image.
          */
         void print (int width, int height);
+
+    private:
+
+        std::vector<Label> pixelLabels;
+        std::vector<unsigned> pixelDepths;
+        std::vector<unsigned> I;
+        std::vector<unsigned short> J;
+
+
+        /** 
+         * Gets the index of the content array of the element in 
+         * position (x,y).
+         * @param x Pixel X-axis coordinate.
+         * @param y Pixel Y-axis coordinate.
+         * @return index of the content array or NOT_FOUND if pixel from 
+         * background.
+         */
+        int getIndex(const short &x, const short &y);
 };
 
 /**
@@ -157,7 +153,6 @@ class TrainImage : public Image {
  *  the Kinect sensor.
  *
  */
-
 class KinectImage : public Image {
     private:
 
@@ -190,4 +185,6 @@ class KinectImage : public Image {
         unsigned getDepth(const short & x, const short & y);   
 };
 
-# endif
+} // namespace rdf
+
+# endif // RGBD_RF_IMAGE_HH__

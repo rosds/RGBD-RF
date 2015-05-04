@@ -1,10 +1,14 @@
-# ifndef IMAGE_TRAIN_SET_H
-# define IMAGE_TRAIN_SET_H
+# ifndef RGBD_RF_IMAGE_TRAIN_SET_HH__
+# define RGBD_RF_IMAGE_TRAIN_SET_HH__
 
-# include <RGBD-RF/common.hpp>
 # include "PixelInfo.h"
 # include "ImagePool.h"
 
+namespace rdf {
+
+/** \brief Basically contains th
+ *
+ */
 class TrainData {
 
     private:
@@ -31,8 +35,8 @@ class TrainData {
                    int endIdx,
                    bool byLabel = false);
 
-        /**
-         * Returns the number of pixels
+        /** \brief Returns the number of pixels
+         *  \return The number of pixels.
          */
         int size ();
         
@@ -40,4 +44,6 @@ class TrainData {
 
 };
 
-# endif
+} // namespace rdf 
+
+# endif // RGBD_RF_IMAGE_TRAIN_SET_HH__

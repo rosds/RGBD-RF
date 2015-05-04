@@ -1,64 +1,40 @@
 # include "RandomForest.h"
 
-/**
- * Thread function that test a number of split candidates and return the
+/** \brief Thread function that test a number of split candidates and return the
  * best.
  */
- //CHECK
-void* findSplitThread (void* args)
-
-{
+void* rdf::findSplitThread(void* args) {
     RandomForest& f = *(((SCParams*) args) -> forest);
     return new SplitCandidate(f.bestSplitCandidate(*((SCParams*)args)));
 }
 
-/**
- * Random forest empty constructor
- */
- //CHECK
-RandomForest :: RandomForest () 
-{
-    tp = NULL;
-}
 
-/**
- * Calculates the feature function given the offsets and the
- * pixel.
- *
- * @param u first pixel offset.
- * @param v second pixel offset.
- * @param x Pixel coordinate of the pixel for the feature to be
- * calculated.
- *
- * @return value of the calculated feature.
+/** \brief Calculates the feature function given the offsets and the
+ *  pixel.
+ * 
+ *  \param[in] u first pixel offset.
+ *  \param[in] v second pixel offset.
+ *  \param[in] x Pixel coordinate of the pixel for the feature to be
+ *  calculated.
+ * 
+ *  \return value of the calculated feature.
  */
- //CHECK
-float RandomForest :: calcFeature(Offset u,
-                                  Offset v, 
-                                  PixelInfo x,
-                                  Image *img)
-{
-
-    PixelInfo xUoff;
-    PixelInfo xVoff;
-    unsigned dx;
-    unsigned uDepth;
-    unsigned vDepth;
-    
-    dx = img -> getDepth(x.x, x.y);
+float rdf::RandomForest::calcFeature(
+    const Offset& u,
+    const Offset& v, 
+    const PixelInfo& pi,
+    Image *img
+) {
+    uint32_t dx = img->getDepth(pi.x, pi.y);
 
     // Normalize offsets by the depth at pixel
-    u /= dx;
-    v /= dx;
-
-    xUoff = x + u;
-    xVoff = x + v;
+    PixelInfo xUoff = pi + (u / dx);
+    PixelInfo xVoff = pi + (v / dx);
     
-    uDepth = img -> getDepth(xUoff.x, xUoff.y);
-    vDepth = img -> getDepth(xVoff.x, xVoff.y);
+    const uint32_t uDepth = img->getDepth(xUoff.x, xUoff.y);
+    const uint32_t vDepth = img->getDepth(xVoff.x, xVoff.y);
 
     return uDepth - vDepth;
-    
 }
 
 /** 
@@ -74,9 +50,7 @@ float RandomForest :: calcFeature(Offset u,
  * @return index that defines the best split of the array. The index
  * is placed in the first element of the right set.
  */
- //CHECK
-int RandomForest :: sortData (NumRange range, SplitCandidate f)
-{
+int rdf::RandomForest::sortData(NumRange range, SplitCandidate f) {
     int i;
     unsigned pivot;
     bool findRight;
@@ -119,9 +93,7 @@ int RandomForest :: sortData (NumRange range, SplitCandidate f)
  *
  *  @return The best split candidate generated
  */
- //CHECK
-SplitCandidate RandomForest :: bestSplitThreadFun(NumRange range)
-{
+rdf::SplitCandidate rdf::RandomForest::bestSplitThreadFun(NumRange range) {
 
     int i;
     int errCode;
@@ -171,9 +143,7 @@ SplitCandidate RandomForest :: bestSplitThreadFun(NumRange range)
  *
  *  @return the best split candidate generated.
  */
-//CHECK
-SplitCandidate RandomForest :: bestSplitCandidate(SCParams& params)
-{
+rdf::SplitCandidate rdf::RandomForest::bestSplitCandidate(SCParams& params) {
 
     unsigned offsetNum = tp -> offsetNum / THREADS_PER_NODE;
     unsigned thresholdNum = tp -> thresholdNum / THREADS_PER_NODE;
@@ -202,8 +172,8 @@ SplitCandidate RandomForest :: bestSplitCandidate(SCParams& params)
     for (i = 0; i < offsetNum; i++) {
 
         // Generate a pair of random offsets
-        u = Offset(tp -> offsetRange);
-        v = Offset(tp -> offsetRange);
+        u.setRandomlyInRange(tp->offsetRange.start, tp->offsetRange.end);
+        v.setRandomlyInRange(tp->offsetRange.start, tp->offsetRange.end);
         
         for (j = 0; j < thresholdNum; j++) {
        
@@ -243,8 +213,7 @@ SplitCandidate RandomForest :: bestSplitCandidate(SCParams& params)
  *
  */
 //CHECK
-float RandomForest :: calcSetEntropy(NumRange& setRange)
-{
+float rdf::RandomForest::calcSetEntropy(NumRange& setRange) {
     int i;
     Label label;
     vector <float> percentages;
@@ -285,11 +254,11 @@ float RandomForest :: calcSetEntropy(NumRange& setRange)
  *  @return the total entropy of the phi feature
  *
  */
-//CHECK
-float RandomForest :: G(SplitCandidate phi, 
-                        float setEntropy, 
-                        NumRange setRange)
-{
+float rdf::RandomForest::G(
+    SplitCandidate phi, 
+    float setEntropy, 
+    NumRange setRange
+) {
     float gain;
     vector <float> left;
     vector <float> right;
@@ -331,13 +300,14 @@ float RandomForest :: G(SplitCandidate phi,
  *
  */
 //CHECK
-void RandomForest :: getPercentage(SplitCandidate phi,
-                                   vector <float>& left,
-                                   vector <float>& right,
-                                   unsigned& leftCard,
-                                   unsigned& rightCard,
-                                   NumRange range)
-{
+void rdf::RandomForest::getPercentage(
+    SplitCandidate phi,
+    vector <float>& left,
+    vector <float>& right,
+    unsigned& leftCard,
+    unsigned& rightCard,
+    NumRange range
+) {
 
     int i;
     Label label;
@@ -394,8 +364,7 @@ void RandomForest :: getPercentage(SplitCandidate phi,
  *  @return the entroply associated with this percentages.
  */
 //CHECK
-float RandomForest :: H (vector <float> probabilities)
-{
+float rdf::RandomForest::H(const std::vector<float>& probabilities) {
     unsigned i;
     float entropy;
 
@@ -421,10 +390,11 @@ float RandomForest :: H (vector <float> probabilities)
  *  @return true if the node must be a leaf or false in other case.
  */
  //CHECK
-bool RandomForest :: testNode (Node **n,
-                               Node *currentNode,
-                               NumRange range)
-{
+bool rdf::RandomForest::testNode(
+    Node **n,
+    Node *currentNode,
+    NumRange range
+) {
     int i;
     int sampleCount;
     int depth;
@@ -495,9 +465,7 @@ bool RandomForest :: testNode (Node **n,
  *
  *  @return a vector with the propabilities
  */
- //CHECK
-vector <float> RandomForest :: probDist (NumRange setRange)
-{
+std::vector<float> rdf::RandomForest::probDist(NumRange setRange) {
     int i;
     float setSize;
     Label label;
@@ -537,18 +505,16 @@ vector <float> RandomForest :: probDist (NumRange setRange)
  *
  *  @return depth of the specified node
  */
- //CHECK
-int RandomForest :: getDepth (Node *n)
-{
+int rdf::RandomForest::getDepth(Node *n) {
     int depth;
     SplitNode *sNode = (SplitNode *) n;
 
     depth = 0;
     
-    if (sNode != NULL) {
-        while (sNode -> up != NULL) {
+    if (sNode != nullptr) {
+        while (sNode->parent_ != nullptr) {
             depth ++;
-            sNode = (SplitNode *) sNode -> up;
+            sNode = dynamic_cast<SplitNode*>(sNode->parent_);
         }
     }
 
@@ -568,11 +534,11 @@ int RandomForest :: getDepth (Node *n)
  *  @return LEFT or RIGHT depending on the classification of the
  *  pixel x by the feature phi.
  */
- //CHECK
-pixelSet RandomForest :: classifyPixel(SplitCandidate phi, 
-                                       PixelInfo x, 
-                                       Image *img)
-{
+rdf::pixelSet rdf::RandomForest::classifyPixel(
+    SplitCandidate phi, 
+    PixelInfo x, 
+    Image *img
+) {
     float featureValue;
     
     featureValue = calcFeature (phi.u, phi.v, x, img);
@@ -594,9 +560,7 @@ pixelSet RandomForest :: classifyPixel(SplitCandidate phi,
  *  @param number of training images.
  *  @param reference to the train data.
  */
- //CHECK
-void RandomForest :: train (int treeID)
-{
+void rdf::RandomForest::train(int treeID) {
     unsigned nodeCount;
 
     int idx;
@@ -619,8 +583,8 @@ void RandomForest :: train (int treeID)
     NumRange range;
     NumRange tmpRange;
 
-    stack <Node *> nStack;
-    stack <NumRange> trainIdx;
+    std::stack<Node*> nStack;
+    std::stack<NumRange> trainIdx;
 
     // Get the number of processes in the MPI cluster
     MPI_Comm_size (MPI_COMM_WORLD, &mpiSize);
@@ -641,7 +605,7 @@ void RandomForest :: train (int treeID)
 
     if (nType == SPLIT) {
         // Building split node
-        ((SplitNode *) *root) -> up = NULL;
+        ((SplitNode*)*root)->parent_ = nullptr;
         nStack.push (*root);
         trainIdx.push (range);
 
@@ -651,8 +615,7 @@ void RandomForest :: train (int treeID)
     else if (nType == LEAF) {
         
         // Calculate leaf probability distribution
-        ((LeafNode *) *root) -> pDist = 
-            probDist(range);
+        ((LeafNode*)*root)->pDist = probDist(range);
         
         ((LeafNode *) *root) -> id = nodeCount;
         nodeCount++;
@@ -727,13 +690,13 @@ void RandomForest :: train (int treeID)
         if (nType == SPLIT) {
             // Check left node
 
-            ((SplitNode *) currentNode) -> left = left;
+            ((SplitNode *) currentNode)->left_ = left;
 
             // Build new node
-            ((SplitNode *) left) -> up = currentNode;
-            ((SplitNode *) left) -> left = NULL;
-            ((SplitNode *) left) -> right = NULL;
-            ((SplitNode *) left) -> phi = SplitCandidate();
+            ((SplitNode *) left)->parent_ = currentNode;
+            ((SplitNode *) left)->left_ = NULL;
+            ((SplitNode *) left)->right_ = NULL;
+            ((SplitNode *) left)->phi = SplitCandidate();
 
 
             // Labeling node
@@ -745,13 +708,13 @@ void RandomForest :: train (int treeID)
         } 
         else if (nType == LEAF) {
             
-            ((SplitNode *) currentNode) -> left = left;
+            ((SplitNode*) currentNode)->left_ = left;
 
-            ((LeafNode *) left) -> pDist = 
+            ((LeafNode*) left)->pDist = 
                 probDist(tmpRange);
                 
             // Labeling node
-            ((LeafNode *) left) -> id = nodeCount;
+            ((LeafNode*) left)->id = nodeCount;
             nodeCount++;
 
         }
@@ -765,13 +728,13 @@ void RandomForest :: train (int treeID)
     
         if (nType == SPLIT) {
 
-            ((SplitNode *) currentNode) -> right = right;
+            ((SplitNode*)currentNode)->right_ = right;
 
             // Build new node
-            ((SplitNode *) right) -> up = currentNode;
-            ((SplitNode *) right) -> left = NULL;
-            ((SplitNode *) right) -> right = NULL;
-            ((SplitNode *) right) -> phi = SplitCandidate();
+            ((SplitNode *) right)->parent_ = currentNode;
+            ((SplitNode *) right)->left_ = nullptr;
+            ((SplitNode *) right)->right_ = nullptr;
+            ((SplitNode *) right)->phi = SplitCandidate();
             
             // Labeling node
             ((SplitNode *) right) -> id = nodeCount;
@@ -782,13 +745,12 @@ void RandomForest :: train (int treeID)
         } 
         else if (nType == LEAF) {
             
-            ((SplitNode *) currentNode) -> right = right;
+            ((SplitNode*)currentNode)->right_ = right;
             
-            ((LeafNode *) right) -> pDist = 
-                probDist(tmpRange);
+            ((LeafNode*) right)->pDist = probDist(tmpRange);
             
             // Labeling node
-            ((LeafNode *) right) -> id = nodeCount;
+            ((LeafNode*) right)-> id = nodeCount;
             nodeCount++;
 
 
@@ -807,8 +769,7 @@ void RandomForest :: train (int treeID)
  *  @param id of the tree.
  */
  //CHECK
-void RandomForest :: traversal (int treeID)
-{   
+void rdf::RandomForest::traversal(int treeID) {   
     printf ("TRAVERSAL TREE %d\n", treeID);
     unsigned int i;
     Node *root;
@@ -816,7 +777,7 @@ void RandomForest :: traversal (int treeID)
     Node *right;
     Node *left;
     
-    stack <Node *> nStack;
+    std::stack<Node*> nStack;
 
     root = trees[treeID];
     nStack.push(root);
@@ -827,7 +788,7 @@ void RandomForest :: traversal (int treeID)
 
         
         // Push left element second
-        left = ((SplitNode *) currentNode) -> left;
+        left = ((SplitNode*)currentNode)->left_;
 
         if (left -> nodeType() != LEAF) {
             nStack.push(left);      
@@ -844,7 +805,7 @@ void RandomForest :: traversal (int treeID)
         }
         
         // Push right element first
-        right = ((SplitNode *) currentNode) -> right;
+        right = ((SplitNode*)currentNode)->right_;
 
         if ( right -> nodeType() != LEAF) {
             nStack.push(right);
@@ -874,9 +835,7 @@ void RandomForest :: traversal (int treeID)
  *  @return label of the classification
  */
  //CHECK
-Label RandomForest :: predict (Image* img, PixelInfo pixel, float& prob)
-{
-
+Label rdf::RandomForest::predict(Image* img, PixelInfo pixel, float& prob) {
     int i;
     unsigned int j;
     Label maxLabel;
@@ -904,11 +863,11 @@ Label RandomForest :: predict (Image* img, PixelInfo pixel, float& prob)
         
             switch (ps) {
                 case RIGHT:
-                    currentNode = sNode -> right;
+                    currentNode = sNode->right_;
                     break;
 
                 case LEFT:
-                    currentNode = sNode -> left;
+                    currentNode = sNode->left_;
                     break;
                 default:
                     printf("Error could not classify pixel\n");
@@ -956,8 +915,7 @@ Label RandomForest :: predict (Image* img, PixelInfo pixel, float& prob)
  *
  */
  //CHECK
-void RandomForest :: trainForest (trainParams& tparams)
-{
+void rdf::RandomForest::trainForest(trainParams& tparams) {
     unsigned i;
     int j;
     int rank;
@@ -1038,9 +996,9 @@ void RandomForest :: trainForest (trainParams& tparams)
             endIdx = images -> poolSize() - 1;
         }
         
-        cout << "ARBOL " << i << endl;
-        cout << "INDICE START " << startIdx << endl;
-        cout << "INDICE END " << endIdx << endl;
+        std::cout << "Tree " << i << std::endl;
+        std::cout << "Index start " << startIdx << std::endl;
+        std::cout << "Index end   " << endIdx << std::endl;
 
 
         //startIdx = 0;
@@ -1125,9 +1083,10 @@ void RandomForest :: trainForest (trainParams& tparams)
  *  @param file pointer to the file.
  */
  //CHECK
-void RandomForest :: writeNodeToFile (Node *currentNode,
-                                      FILE *fp)
-{   
+void rdf::RandomForest::writeNodeToFile(
+    Node* currentNode,
+    FILE *fp
+) {   
     unsigned int i;
     int nodeID;
     
@@ -1168,8 +1127,7 @@ void RandomForest :: writeNodeToFile (Node *currentNode,
  *
  */
  //CHECK
-void RandomForest :: writeTreeToFile(int treeID, string fileName)
-{
+void rdf::RandomForest::writeTreeToFile(int treeID, string fileName) {
     FILE* fp;
 
     Node *root;
@@ -1179,7 +1137,7 @@ void RandomForest :: writeTreeToFile(int treeID, string fileName)
 
     SplitCandidate phi;
     
-    stack <Node *> nStack;
+    std::stack<Node*> nStack;
 
     if ((fp = fopen(fileName.c_str(), "w")) == NULL) {
         printf("Cannot open file %s.\n", fileName.c_str());
@@ -1228,14 +1186,14 @@ void RandomForest :: writeTreeToFile(int treeID, string fileName)
         currentNode = nStack.top();
         nStack.pop();
         
-        left = ((SplitNode *) currentNode) -> left;
+        left = ((SplitNode *)currentNode)->left_;
         writeNodeToFile (left, fp);
         
         if (left -> nodeType() != LEAF) {
             nStack.push(left);
         }
 
-        right = ((SplitNode *) currentNode) -> right;
+        right = ((SplitNode *) currentNode)->right_;
         writeNodeToFile (right, fp);
         
         if (right -> nodeType() != LEAF) {
@@ -1253,12 +1211,11 @@ void RandomForest :: writeTreeToFile(int treeID, string fileName)
  *  @param path to the directory
  */
  // CHECK
-void RandomForest :: writeForest(string dirName)
-{
+void rdf::RandomForest::writeForest(const std::string& dirname) {
     unsigned i;
-    stringstream fileName;
+    std::stringstream fileName;
     for (i = 0; i < trees.size(); i++) {
-        fileName << dirName << "/" << i << ".tree";
+        fileName << dirname << "/" << i << ".tree";
         writeTreeToFile(i,fileName.str());
         fileName.flush();
         fileName.str("");
@@ -1275,14 +1232,15 @@ void RandomForest :: writeForest(string dirName)
  *  @param file pointer to the file.
  */
  //CHECK
-void RandomForest :: loadNodeFromFile (Node **currentNode,
-                                       Node **sideNode,
-                                       char nodeType,
-                                       int nodeID,
-                                       int side,
-                                       stack <Node *> *nStack,
-                                       FILE *fp)
-{
+void rdf::RandomForest::loadNodeFromFile(
+    Node **currentNode,
+    Node **sideNode,
+    char nodeType,
+    int nodeID,
+    int side,
+    std::stack<Node*> *nStack,
+    FILE *fp
+) {
     unsigned i;
 
     SplitCandidate phi;
@@ -1300,10 +1258,10 @@ void RandomForest :: loadNodeFromFile (Node **currentNode,
 
         ((SplitNode*) *sideNode) -> id = nodeID;
         if (currentNode != NULL) {
-            ((SplitNode*) *sideNode) -> up = *currentNode;
+            ((SplitNode*)*sideNode)->parent_ = *currentNode;
         }
         else {
-            ((SplitNode*) *sideNode) -> up = NULL;
+            ((SplitNode*)*sideNode)->parent_ = NULL;
         }
 
         // Push the node into stack
@@ -1326,10 +1284,10 @@ void RandomForest :: loadNodeFromFile (Node **currentNode,
 
     // Build depending the side of the node
     if (side == LEFT) {
-        ((SplitNode *) *currentNode) -> left = *sideNode;
+        ((SplitNode*)*currentNode)->left_ = *sideNode;
     }
     else if (side == RIGHT) {
-        ((SplitNode *) *currentNode) -> right = *sideNode;
+        ((SplitNode*)*currentNode)->right_ = *sideNode;
     }
 
 }
@@ -1344,8 +1302,7 @@ void RandomForest :: loadNodeFromFile (Node **currentNode,
  *
  */
  // CHECK
-void RandomForest :: loadTreeFromFile(string fileName)
-{
+void rdf::RandomForest::loadTreeFromFile(const std::string& filename) {
     FILE* fp;
     int nodeID;
 
@@ -1360,16 +1317,16 @@ void RandomForest :: loadTreeFromFile(string fileName)
 
     SplitCandidate phi;
 
-    stack <Node *> nStack;
+    std::stack<Node*> nStack;
 
     probs.resize(tp -> labelNum, 0.0);
 
-    if ((fp = fopen(fileName.c_str(), "r")) == NULL) {
-        printf("Cannot open file %s.\n", fileName.c_str());
+    if ((fp = fopen(filename.c_str(), "r")) == NULL) {
+        printf("Cannot open file %s.\n", filename.c_str());
         exit(1);
     }
     else {
-        printf ("Loading tree from file %s\n", fileName.c_str());
+        printf ("Loading tree from file %s\n", filename.c_str());
     }
     
     // Building root node
@@ -1405,12 +1362,13 @@ void RandomForest :: loadTreeFromFile(string fileName)
  *  @param path to the directory
  */
  //CHECK
-void RandomForest :: loadForest(int numTrees, 
-                                int numLabels, 
-                                string dirName)
-{
+void rdf::RandomForest::loadForest(
+    int numTrees, 
+    int numLabels, 
+    const std::string& dirname
+) {
     int i;
-    stringstream fileName;
+    std::stringstream fileName;
 
     tp = new trainParams();
     tp -> treeNum = numTrees;
@@ -1418,7 +1376,7 @@ void RandomForest :: loadForest(int numTrees,
 
 
     for (i = 0; i < numTrees; i++) {
-        fileName << dirName << "/" << i << ".tree";
+        fileName << dirname << "/" << i << ".tree";
         loadTreeFromFile(fileName.str());
         fileName.flush();
         fileName.str("");
@@ -1431,8 +1389,7 @@ void RandomForest :: loadForest(int numTrees,
  * @return Percentage of pixels correctly classified.
  */
  //CHECK
-float RandomForest :: testClassification (TrainImage& img) 
-{   
+float rdf::RandomForest::testClassification(TrainImage& img) {   
     int i;
     int j;
     
@@ -1477,9 +1434,10 @@ float RandomForest :: testClassification (TrainImage& img)
  * @return Percentage of pixels correctly classified.
  */
  //CHECK
-float RandomForest :: testClassificationImage (TrainImage& img, 
-                                               string imgName) 
-{   
+float rdf::RandomForest::testClassificationImage(
+    TrainImage& img, 
+    const std::string& imgName
+) {   
     int i;
     int j;
     
@@ -1496,7 +1454,7 @@ float RandomForest :: testClassificationImage (TrainImage& img,
 
     // Image formation
     IplImage* outImg;
-    stringstream fileBMP;
+    std::stringstream fileBMP;
 
     positive = 0;
     noNullPixels = 0;

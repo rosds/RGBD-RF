@@ -1,25 +1,32 @@
+#ifndef RGBD_RF_PIXELINFO_HH__
+#define RGBD_RF_PIXELINFO_HH__
 
-# ifndef PIXELINFO_H
-# define PIXELINFO_H
+#include <stdint.h>
+#include <Offset.h>
 
-# include <RGBD-RF/common.hpp>
-# include "Offset.h"
+namespace rdf {
 
+/** \brief Represents one pixel in the image
+ */
 class PixelInfo {
     public:
-        unsigned short id;
-        unsigned short x;
-        unsigned short y;
+        PixelInfo(
+            const uint32_t row = 0u, 
+            const uint32_t col = 0u,
+            const uint32_t img_id = 0u)
+            : x(row)
+            , y(col)
+            , id(img_id) {}
 
-        PixelInfo (const unsigned short xCoord = 0u, 
-                    const unsigned short yCoord = 0u)
-            : x(xCoord), y(yCoord) {}
+        PixelInfo& operator+=(const Offset& u);
 
-        PixelInfo (const Coord c, unsigned short pID = 0);
+        const PixelInfo operator+(const Offset& u) const;
 
-        PixelInfo& operator += (const Offset& u);
-
-        const PixelInfo operator + (const Offset& u);
+        uint32_t id;
+        uint32_t x;
+        uint32_t y;
 };
 
-# endif
+}
+
+# endif // RGBD_RF_PIXELINFO_HH__

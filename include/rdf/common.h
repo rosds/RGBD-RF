@@ -15,7 +15,6 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <vector>
 #include <map>
 #include <utility>
 #include <ctime>
@@ -40,7 +39,7 @@ using namespace cv;
 // ----------------------------------------------------------------------
 
 typedef std::pair<unsigned short, unsigned short> Coord;
-typedef unsigned char Label;
+typedef uint8_t Label;
 
 // ----------------------------------------------------------------------
 // Some Globals

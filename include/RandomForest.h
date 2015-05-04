@@ -1,13 +1,15 @@
-# ifndef RANDOM_FOREST_H
-# define RANDOM_FOREST_H
+#ifndef RGBD_RF_RANDOM_FOREST_HH__
+#define RGBD_RF_RANDOM_FOREST_HH__
 
-# include <RGBD-RF/common.hpp>
-# include "Offset.h"
-# include "PixelInfo.h"
-# include "SplitCandidate.h"
-# include "Node.h"
-# include "Image.h"
-# include "TrainData.h"
+#include <rdf/common.h>
+#include <Offset.h>
+#include <PixelInfo.h>
+#include <SplitCandidate.h>
+#include <rdf/Node.h>
+#include <Image.h>
+#include <TrainData.h>
+
+namespace rdf {
 
 class RandomForest;
 
@@ -67,7 +69,6 @@ class  trainParams {
  *  generate a Split Canditate to separate the train data examples.
  *
  */
-
 struct SCParams {
     RandomForest* forest;
     NumRange trainDataRange;
@@ -75,8 +76,8 @@ struct SCParams {
 
 void* findSplitThread (void* args);
 
-class RandomForest {
 
+class RandomForest {
     private:
       
         // Training parameters
@@ -160,7 +161,7 @@ class RandomForest {
          *
          *  @return the entropy associated with this percentages.
          */
-        float H (vector <float> percentage);
+        float H(const std::vector<float>& percentage);
 
         /**
          *  This function obtain the probability distribution of the
@@ -171,7 +172,7 @@ class RandomForest {
          *
          *  @return a vector with the propabilities
          */
-        vector <float> probDist (NumRange setRange);
+        std::vector<float> probDist (NumRange setRange);
 
         /**
          *  This function determines if the given node stays as a leaf
@@ -198,21 +199,22 @@ class RandomForest {
          */
         int getDepth (Node *n);
         
-        /**
-         * Calculates the feature function given the offsets and the
-         * pixel.
-         *
-         * @param u first pixel offset.
-         * @param v second pixel offset.
-         * @param x Pixel coordinate of the pixel for the feature to be
-         * calculated.
-         *
-         * @return value of the calculated feature.
+        /** \brief Calculates the feature function given the offsets and the
+         *  pixel.
+         * 
+         *  \param[in] u first pixel offset.
+         *  \param[in] v second pixel offset.
+         *  \param[in] x Pixel coordinate of the pixel for the feature to be
+         *  calculated.
+         * 
+         *  \return value of the calculated feature.
          */
-        float calcFeature(Offset u, 
-                          Offset v,
-                          PixelInfo x,
-                          Image *img);
+        float calcFeature(
+            const Offset& u, 
+            const Offset& v,
+            const PixelInfo& pi,
+            Image *img
+        );
 
         /** 
          * Sorts the training data array and returns the index
@@ -289,7 +291,7 @@ class RandomForest {
                                char nodeType,
                                int nodeID,
                                int side,
-                               stack <Node *> *nStack,
+                               std::stack<Node*> *nStack,
                                FILE *fp);
 
         /**
@@ -299,19 +301,17 @@ class RandomForest {
          * 
          *  @param fileName is the string containing the path to the file.
          */
-        void loadTreeFromFile(string fileName);
+        void loadTreeFromFile(const std::string& filename);
 
     public:
 
-        /**
-         *  Constructor
-         */
-        RandomForest ();
+        /** \brief Constructor */
+        RandomForest () : tp(nullptr) {}
 
         /**
          *  TODO: implement the destructor
          */
-        ~RandomForest () {}
+        virtual ~RandomForest () {}
  
         /**
          *  bestSplitThreadFun
@@ -381,7 +381,7 @@ class RandomForest {
          *
          *  @param path to the directory
          */
-        void writeForest(string dirName);
+        void writeForest(const std::string& dirName);
 
         /**
          *  Load the trees contained in a directori with the name
@@ -389,7 +389,7 @@ class RandomForest {
          *
          *  @param path to the directory
          */
-        void loadForest(int numTrees, int numLabels, string dirName);
+        void loadForest(int numTrees, int numLabels, const std::string& dirName);
 
         /**
          *  Return the percentage of classification of an image.
@@ -407,8 +407,10 @@ class RandomForest {
          * @return Percentage of pixels correctly classified.
          */
          //CHECK
-        float testClassificationImage (TrainImage& img, string imgName);
+        float testClassificationImage(TrainImage& img, const std::string& imgName);
 
 };
 
-# endif
+} // namespace rdf
+
+#endif // RGBD_RF_RANDOM_FOREST_HH__

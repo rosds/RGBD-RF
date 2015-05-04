@@ -1,42 +1,38 @@
-# include "Offset.h"
+# include <Offset.h>
 
-Offset& Offset :: operator /= (const float& f)
-{
-    if (f != 0.0f) {
-        this -> x /= f;
-        this -> y /= f;
-    }
-    return *this;
-}
-
-Offset& Offset :: operator /= (const unsigned& u)
-{
-    if (u != 0) {
-        this -> x /= u;
-        this -> y /= u;
-    }
-    return *this;
-}
-
-/**
- *  This constructor generate a Offset randomly between the
- *  range of numbers given.
- *
- *  @param range of numbers in where the offset will be
- *  generated randomly.
+/** \brief Divides both offsets by the given float.
+ *  \param[in] f The float to divide both offsets.
+ *  \return The offset with both coordinates divided by the float.
  */
- //CHECK: anque no me cuadra tanto mult por 1000 asi caiman.
+rdf::Offset& rdf::Offset::operator/=(const float f) {
+    x = static_cast<int>(floor(static_cast<float>(x) / std::max(f, std::numeric_limits<float>::epsilon())));
+    y = static_cast<int>(floor(static_cast<float>(y) / std::max(f, std::numeric_limits<float>::epsilon())));
+    return *this;
+}
 
-Offset :: Offset(NumRange r)
-{
-    r.start *= MILLIMETERS_CONVERT;
-    r.end   *= MILLIMETERS_CONVERT;
+rdf::Offset rdf::Offset::operator/(const float f) const {
+    int a = static_cast<int>(floor(static_cast<float>(x) / std::max(f, std::numeric_limits<float>::epsilon())));
+    int b = static_cast<int>(floor(static_cast<float>(y) / std::max(f, std::numeric_limits<float>::epsilon())));
+    return Offset(a, b);
+}
 
-    r.start -= MILLIMETERS_CONVERT;
-    r.end   += MILLIMETERS_CONVERT;
+rdf::Offset& rdf::Offset::operator/=(const unsigned& u) {
+    if (u != 0) {
+         x /= u;
+         y /= u;
+    }
+    return *this;
+}
 
-    r.end++;
-    
-    x = int(randFloat(r)) + MILLIMETERS_CONVERT;
-    y = int(randFloat(r)) + MILLIMETERS_CONVERT;
+rdf::Offset rdf::Offset::operator/(const unsigned& u) const {
+    return (u != 0)? Offset(x / u, y / u) : Offset();
+}
+
+/** \brief set the offsets randomly within the specified range.
+ *  \param[in] min Minimum integer of the range.
+ *  \param[in] max Maximum integer of the range.
+ */
+void rdf::Offset::setRandomlyInRange(const int min, const int max) {
+    x = min + (rand() % (max - min + 1));
+    y = min + (rand() % (max - min + 1));
 }

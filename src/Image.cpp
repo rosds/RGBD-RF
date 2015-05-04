@@ -7,12 +7,11 @@
 
 # include "Image.h"
 
-/**
- *  Image constructor. Loads the image representation to memory.
- *  @param filename Filename of the input image in sparse representation.
+
+/** \brief Loads the image representation to memory.
+ *  \param[in] filename Filename of the input image in sparse representation.
  */
-TrainImage :: TrainImage (const string& fileName)
-{
+rdf::TrainImage::TrainImage(const std::string& fileName) {
     Label l;
     unsigned s;
     unsigned d;
@@ -53,22 +52,20 @@ TrainImage :: TrainImage (const string& fileName)
     fclose(fp);
 }
 
-/** 
- * Gets the index of the content array of the element in 
+
+/** \brief Gets the index of the content array of the element in 
  * position (x,y).
- * @param x Pixel X-axis coordinate.
- * @param y Pixel Y-axis coordinate.
- * @return index of the content array, NOT_FOUND if pixel from 
+ * \param[in] x Pixel X-axis coordinate.
+ * \param[in] y Pixel Y-axis coordinate.
+ * \return index of the content array, NOT_FOUND if pixel from 
  * background.
  */
-// CHECK
-int TrainImage :: getIndex(const short & x, const short & y)
-{
+int rdf::TrainImage::getIndex(const short& x, const short& y) {
     int index;
 
-    vector <unsigned short> :: iterator it;
-    vector <unsigned short> :: iterator begin;
-    vector <unsigned short> :: iterator end;
+    std::vector<unsigned short>::iterator it;
+    std::vector<unsigned short>::iterator begin;
+    std::vector<unsigned short>::iterator end;
 
     // Check the range of x
     if ((x < 0) || (x >= height)) {
@@ -105,16 +102,13 @@ int TrainImage :: getIndex(const short & x, const short & y)
     return NOT_FOUND;
 }
 
-/**
- * Gets the label value of the pixel in position (x,y). 
- * @param x Pixel X-axis coordinate.
- * @param y Pixel Y-axis coordinate.
- * @return Label value of the pixel (x,y) or DEFAULT_LABEL if
+/** \brief Gets the label value of the pixel in position (x,y). 
+ * \param[in] x Pixel X-axis coordinate.
+ * \param[in] y Pixel Y-axis coordinate.
+ * \return Label value of the pixel (x,y) or DEFAULT_LABEL if
  * label not found.
  */
-//CHECK
-Label TrainImage :: getLabel(const short & x, const short & y)
-{
+Label rdf::TrainImage::getLabel(const short& x, const short& y) {
     int index;
     index = getIndex(x,y);
     if (index != NOT_FOUND) {
@@ -125,16 +119,14 @@ Label TrainImage :: getLabel(const short & x, const short & y)
     }
 }
 
-/**
- * Gets the depth value of the pixel in position (x,y). 
- * @param x Pixel X-axis coordinate.
- * @param y Pixel Y-axis coordinate.
- * @return depth value of the pixel (x,y) or DEFAULT_DEPTH if
+
+/** \brief Gets the depth value of the pixel in position (x,y). 
+ * \param[in] x Pixel X-axis coordinate.
+ * \param[in] y Pixel Y-axis coordinate.
+ * \return depth value of the pixel (x,y) or DEFAULT_DEPTH if
  * depth not found.
  */
-//CHECK
-unsigned TrainImage :: getDepth(const short & x, const short & y)
-{
+unsigned rdf::TrainImage::getDepth(const short& x, const short& y) {
     int index;
     
     index = getIndex(x,y);
@@ -146,44 +138,32 @@ unsigned TrainImage :: getDepth(const short & x, const short & y)
     }
 }
 
-/**
- *  getRandomCoord
- *
- *  This function get a random coordinate.
- *  @return a random coordinate of pixel.
+
+/** \brief Sample a random non-zero element from a Yale representation of a sparse 
+ *  matrix.
+ *  
+ *  \param[out] row Row of the element.
+ *  \param[out] col Col of the element.
  */
-//CHECK
-Coord TrainImage :: getRandomCoord()
-{
-    unsigned ind;
-    unsigned x;
-    unsigned short y;
-    vector <unsigned> :: iterator it;
+void rdf::TrainImage::getRandomCoord(uint32_t& row, uint32_t& col) {
+    // pick a random non-zero element.
+    const auto ind = static_cast<uint32_t>(rand() % J.size());
 
-    ind = rand() % J.size();
-
-    // get the col number
-    y = J[ind];
+    // get the col.
+    col = J[ind];
     
-    it = upper_bound (I.begin(), I.end(), ind);
-    
-    x = int(it - I.begin());
-
-    return Coord (x, y);
+    // get the row.
+    const auto& it = std::upper_bound(I.begin(), I.end(), ind);
+    row = static_cast<uint32_t>(it - I.begin());
 }
 
-/**
- *  getRandCoordByLabel
- *
- *  This function get a random coord of a given label group of
+/** \brief This function get a random coord of a given label group of
  *  pixels.
  *
- *  @param type of label.
- *
- *  @return a random coordinate of pixel of the given label.
+ *  \param[in] type of label.
+ *  \return a random coordinate of pixel of the given label.
  */
-void TrainImage :: getRandCoordByLabel(int pixNum, vector<PixelInfo>& p, int imgId)
-{
+void rdf::TrainImage::getRandCoordByLabel(int pixNum, std::vector<PixelInfo>& p, int imgId) {
     unsigned i;
     unsigned j;
     unsigned ind;
@@ -232,20 +212,17 @@ void TrainImage :: getRandCoordByLabel(int pixNum, vector<PixelInfo>& p, int img
 
                 x = int(it - I.begin());
 
-                p.push_back(PixelInfo(Coord(x, y), imgId));
+                p.push_back(PixelInfo(x, y, imgId));
             }
         }
     }
 }
 
-/**
- * Prints the content labels of the entire train image.
- * @param width Width of the image.
- * @param height Height of the image.
+/** \brief Prints the content labels of the entire train image.
+ * \param[in] width Width of the image.
+ * \param[in] height Height of the image.
  */
- //CHECK
-void TrainImage :: print (int width, int height) 
-{
+void rdf::TrainImage::print(const int width, const int height) {
     for (int i = 0; i < height; i++) {
         for(int j = 0; j < width; j++) {
             printf ("%d ", getLabel(i,j));
@@ -254,13 +231,12 @@ void TrainImage :: print (int width, int height)
     }
 }
 
-/**
- * Gets the depth value of the element in position (x,y).
- * @param x Pixel X-axis coordinate.
- * @param y Pixel Y-axis coordinate.
- * @return Depth value of the (x,y) pixel.
+/** \brief Gets the depth value of the element in position (x,y).
+ *  \param[in] x Pixel X-axis coordinate.
+ *  \return Depth value of the (x,y) pixel.
+ *  \param[in] y Pixel Y-axis coordinate.
  */
-unsigned KinectImage :: getDepth(const short & x, const short & y)
+unsigned rdf::KinectImage::getDepth(const short& x, const short& y)
 {
     // Check the range of x
     if ((x < 0) || (x >= height)) {

@@ -1,62 +1,54 @@
-# ifndef IMAGEPOOL_H
-# define IMAGEPOOL_H
+#ifndef RBGD_RF_IMAGEPOOL_HH__
+#define RBGD_RF_IMAGEPOOL_HH__
 
-# include <RGBD-RF/common.hpp>
-# include "Image.h"
-# include "PixelInfo.h"
+#include <string>
+#include <Image.h>
+#include <PixelInfo.h>
+#include <rdf/common.h>
 
-class ImagePool 
-{
-    private:
+namespace rdf {
 
-
+/** \brief Container for the training images.
+ */
+class ImagePool { 
     public:
-        
-        vector <TrainImage> images;
-        /** 
-         * Class Constructor
+        ImagePool(const std::string imgDir);
+
+        /** \brief Default destructor **/
+        virtual ~ImagePool() {}
+
+        /** \brief Reorder the pool given a array of index.
+         *  \param[in] index_vector The vector with the indices
          */
-        ImagePool();
-        
-        ImagePool(string imgDir);
+        void poolReorder(std::vector<int>& index_vector);
 
-        ~ImagePool() {}
+        /** \brief Returns the number of images in the pool. */
+        inline int poolSize() { return static_cast<int>(images.size()); }
 
-        /**
-         * Reorder the pool given a array of
-         * index.
-         * @param idxVec vector of indexes.
-         */
-        void poolReorder(vector <int> idxVec);
-
-        int poolSize ();
-
-        /**
-         *  getLabel
-         *
-         *  this functions retrieves the pixel Label of an image given a
+        /** \brief this functions retrieves the pixel Label of an image given a
          *  PixelInfo object.
          *
-         *  @param pi is the pixel object.
-         *  @return The pixel label.
+         *  \param[in] pi The pixel identification.
+         *  \return return The pixel label.
          */
-        Label getLabel(PixelInfo& pi);
+        Label getLabel(const PixelInfo& pi);
 
-        /**
-         *  getDepth
-         *
-         *  this functions retrieves the pixel depth of an image given a
+        /** \brief this functions retrieves the pixel depth of an image given a
          *  PixelInfo object.
          *
-         *  @param pi is the pixel object.
+         *  \param[in] pi The pixel identification.
          *  @return The pixel depth.
          */
-        unsigned getDepth(PixelInfo& pi);
-
+        unsigned getDepth(const PixelInfo& pi);
 
         TrainImage* getImgPtr(unsigned i);
 
         TrainImage& operator[] (int i) { return images[i]; }
+
+    private:
+        std::vector<TrainImage> images;
 };
 
-# endif
+} // namespace rdf
+
+# endif // RGBD_RF_IMAGEPOOL_HH__

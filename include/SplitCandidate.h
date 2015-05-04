@@ -1,9 +1,10 @@
+#ifndef RGBD_RF_SPLITCANDIDATE_HH__
+#define RGBD_RF_SPLITCANDIDATE_HH__
 
-# ifndef SPLITCANDIDATE_H
-# define SPLITCANDIDATE_H
+#include <rdf/common.h>
+#include <Offset.h>
 
-# include <RGBD-RF/common.hpp>
-# include "Offset.h"
+namespace rdf {
 
 class SplitCandidate {
     public:
@@ -11,11 +12,16 @@ class SplitCandidate {
         Offset v;
         float t;
         float g;
-        SplitCandidate (const Offset uOff = Offset(0,0), 
-                        const Offset vOff = Offset(0,0), 
-                        const float thres = 0.0,
-                        const float gain = 0.0) 
-            : u(uOff), v(vOff), t(thres), g(gain) {}
+
+        SplitCandidate(
+            const Offset uOff = Offset(0,0), 
+            const Offset vOff = Offset(0,0), 
+            const float thres = 0.0f,
+            const float gain = 0.0f) 
+            : u(uOff)
+            , v(vOff)
+            , t(thres)
+            , g(gain) {}
 
         SplitCandidate (const SplitCandidate& sc) {
             u = sc.u;
@@ -25,4 +31,6 @@ class SplitCandidate {
         }
 };
 
-# endif
+} // namespace rdf
+
+#endif // RGBD_RF_SPLITCANDIDATE_HH__
