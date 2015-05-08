@@ -1,11 +1,9 @@
-/**
- *  @file Image.cpp
+/** \file file Image.cpp
  *
- *  @brief This file contain the definition of the functions from the
+ *  \brief This file contain the definition of the functions from the
  *  file Image.h
  */
-
-# include "Image.h"
+#include <rdf/Image.h>
 
 
 /** \brief Loads the image representation to memory.
@@ -18,7 +16,7 @@ rdf::TrainImage::TrainImage(const std::string& fileName) {
     FILE* fp;
 
 
-    if((fp = fopen(fileName.c_str(), "r")) == NULL) {
+    if ((fp = fopen(fileName.c_str(), "r")) == NULL) {
         printf("Cannot open file %s.\n", fileName.c_str());
         exit(1);
     }

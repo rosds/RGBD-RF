@@ -1,10 +1,10 @@
 #include <ImagePool.h>
 
 /** \brief Constructor.
- * Loads the image content of the specified directory.
- * \param[in] dirname Directory path to the image pool.
+ *  Loads the image content of the specified directory.
+ *  \param[in] dirname Directory path to the image pool.
  */
-rdf::ImagePool::ImagePool(std::string dirname) {
+rdf::ImagePool::ImagePool(const std::string dirname) {
     int id = 0;
     DIR *pdir = NULL;
     struct dirent *pent = NULL;

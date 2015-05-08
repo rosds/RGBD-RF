@@ -1,13 +1,13 @@
 #ifndef RGBD_RF_RANDOM_FOREST_HH__
 #define RGBD_RF_RANDOM_FOREST_HH__
 
-#include <rdf/common.h>
 #include <Offset.h>
 #include <PixelInfo.h>
 #include <SplitCandidate.h>
 #include <rdf/Node.h>
-#include <Image.h>
 #include <TrainData.h>
+#include <rdf/common.h>
+#include <rdf/Image.h>
 
 namespace rdf {
 

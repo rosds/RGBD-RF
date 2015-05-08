@@ -2,17 +2,25 @@
 #define RBGD_RF_IMAGEPOOL_HH__
 
 #include <string>
-#include <Image.h>
+
 #include <PixelInfo.h>
 #include <rdf/common.h>
+#include <rdf/Image.h>
 
 namespace rdf {
 
 /** \brief Container for the training images.
+ *
+ *  Essentially a vector of images.
  */
 class ImagePool { 
     public:
-        ImagePool(const std::string imgDir);
+
+        /** \brief Constructor.
+         *  Loads the image content of the specified directory.
+         *  \param[in] dirname Directory path to the image pool.
+         */
+        ImagePool(const std::string dirname);
 
         /** \brief Default destructor **/
         virtual ~ImagePool() {}
