@@ -2,7 +2,7 @@
 #define RGBD_RF_SPLITCANDIDATE_HH__
 
 #include <rdf/common.h>
-#include <Offset.h>
+#include <rdf/Offset.h>
 
 namespace rdf {
 
