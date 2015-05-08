@@ -1,7 +1,7 @@
 #ifndef RGBD_RF_IMAGE_TRAIN_SET_HH__
 #define RGBD_RF_IMAGE_TRAIN_SET_HH__
 
-#include <PixelInfo.h>
+#include <rdf/PixelInfo.h>
 #include <rdf/ImagePool.h>
 
 namespace rdf {

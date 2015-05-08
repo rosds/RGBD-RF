@@ -3,9 +3,9 @@
 
 #include <string>
 
-#include <PixelInfo.h>
 #include <rdf/common.h>
 #include <rdf/Image.h>
+#include <rdf/PixelInfo.h>
 
 namespace rdf {
 

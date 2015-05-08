@@ -1,11 +1,9 @@
-/**
- *  @file Image.h
+/** \file Image.h
  *
- *  @brief Contain the definition of the class who store the information
+ *  \brief Contain the definition of the class who store the information
  *  about one image (labels and depth).
  *
  */
-
 #ifndef RGBD_RF_IMAGE_HH__
 #define RGBD_RF_IMAGE_HH__
 
@@ -13,7 +11,7 @@
 #include <vector>
 
 #include <rdf/common.h>
-#include <PixelInfo.h>
+#include <rdf/PixelInfo.h>
 
 #define NOT_FOUND -1
 #define DEFAULT_LABEL 0
@@ -187,4 +185,4 @@ class KinectImage : public Image {
 
 } // namespace rdf
 
-# endif // RGBD_RF_IMAGE_HH__
+#endif // RGBD_RF_IMAGE_HH__

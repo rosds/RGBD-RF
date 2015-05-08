@@ -10,12 +10,17 @@ namespace rdf {
  */
 class PixelInfo {
     public:
+        /** \brief Constructor.
+         *  \param[in] col Column or x coordinate of the pixel.
+         *  \param[in] row Row or y coordinate of the pixel.
+         *  \param[in] img_id Image id to where the pixel belongs. 
+         */
         PixelInfo(
-            const uint32_t row = 0u, 
-            const uint32_t col = 0u,
+            const uint32_t col = 0u, 
+            const uint32_t row = 0u,
             const uint32_t img_id = 0u)
-            : x(row)
-            , y(col)
+            : x(col)
+            , y(row)
             , id(img_id) {}
 
         PixelInfo& operator+=(const Offset& u);

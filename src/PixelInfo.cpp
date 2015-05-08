@@ -1,4 +1,4 @@
-# include "PixelInfo.h"
+#include <rdf/PixelInfo.h>
 
 rdf::PixelInfo& rdf::PixelInfo::operator+=(const Offset& u) {
     this->x += u.x;
