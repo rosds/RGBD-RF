@@ -1,4 +1,4 @@
-#include <ImagePool.h>
+#include <rdf/ImagePool.h>
 
 /** \brief Constructor.
  *  Loads the image content of the specified directory.

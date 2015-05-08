@@ -1,30 +1,27 @@
-# ifndef RGBD_RF_IMAGE_TRAIN_SET_HH__
-# define RGBD_RF_IMAGE_TRAIN_SET_HH__
+#ifndef RGBD_RF_IMAGE_TRAIN_SET_HH__
+#define RGBD_RF_IMAGE_TRAIN_SET_HH__
 
-# include "PixelInfo.h"
-# include "ImagePool.h"
+#include <PixelInfo.h>
+#include <rdf/ImagePool.h>
 
 namespace rdf {
 
-/** \brief Basically contains th
+/** \brief Container for the training data.
  *
+ *  The training data consist of a vector of pixels. These pixels can belong to 
+ *  different images.
  */
 class TrainData {
-
-    private:
-     
-        /* Pixels from image to train */
-        vector <PixelInfo> pixelC;
-
     public:
+        /** \brief Default constructor. **/
+        TrainData() = default;
 
-
-        TrainData ();
-
-        /**
-         * Creates an empty vector of trainImgNum x numPixels
+        /** \brief .
+         *  \param[in] num_imgs Number of images in the training set.
+         *  \param[in] num_pixels Number of pixels per training image.
          */
-        TrainData (int trainImgNum, int numPixels);
+        TrainData(int num_imgs, int num_pixels)
+            : pixels(num_imgs * num_pixels) {}
 
         /**
          * Selects random pixels from the image imgId
@@ -40,8 +37,11 @@ class TrainData {
          */
         int size ();
         
-        PixelInfo& operator[] (int i) { return pixelC[i]; }
+        PixelInfo& operator[] (int i) { return pixels[i]; }
 
+    private:
+        /* Pixels from image to train */
+        vector <PixelInfo> pixels;
 };
 
 } // namespace rdf 

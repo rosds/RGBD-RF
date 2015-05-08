@@ -1,16 +1,5 @@
 #include <TrainData.h>
 
-rdf::TrainData::TrainData() {
-    pixelC = std::vector<PixelInfo>();
-}
-
-/**
- * Creates an empty vector of trainImgNum x numPixels
- */
- //CHECK
-rdf::TrainData :: TrainData (int trainImgNum, int numPixels) {
-    pixelC = std::vector<PixelInfo>(trainImgNum * numPixels);
-}
 
 /** \brief Constructor.
  *
@@ -40,13 +29,13 @@ rdf::TrainData::TrainData(
 
         if (byLabel == true) {
             imgPool[imgIdx].getRandCoordByLabel(numPixels, pix, imgIdx);
-            pixelC.insert(pixelC.end(), pix.begin(), pix.end());
+            pixels.insert(pixels.end(), pix.begin(), pix.end());
 
         } else {
             for (j = 0; j < numPixels; j++) {
 
                 imgPool[imgIdx].getRandomCoord(row, col);
-                pixelC.push_back(PixelInfo(row, col, imgIdx));
+                pixels.push_back(PixelInfo(row, col, imgIdx));
 
             }
         }
@@ -57,5 +46,5 @@ rdf::TrainData::TrainData(
  *  \return The number of pixels.
  */
 int rdf::TrainData::size() {
-    return static_cast<int>(pixelC.size());
+    return static_cast<int>(pixels.size());
 }
