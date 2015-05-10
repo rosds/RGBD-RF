@@ -935,8 +935,8 @@ void rdf::RandomForest::trainForest(trainParams& tparams) {
     images = new ImagePool (tp -> imgDir);
     
     // Obtain the rank and the number of processes in the MPI cluster.
-    MPI_Comm_rank (MPI_COMM_WORLD, &rank);
-    MPI_Comm_size (MPI_COMM_WORLD, &mpiSize);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &mpiSize);
 
     // Calculate the division factor for offsets and threshold numbers
     //TODO: Acomodar la division de features
@@ -945,10 +945,11 @@ void rdf::RandomForest::trainForest(trainParams& tparams) {
     tp -> thresholdNum /= divFactor;
     tp -> imgNum = images -> poolSize();
 
-    idxVec = vector <int> (tp -> imgNum);
+    idxVec.resize(tp->imgNum);
     
     if (rank == 0) {
-        idxVec = permutation(tp -> imgNum);
+
+        idxVec = permutation(tp->imgNum);
         
         // Sending ordering of the pool.
         for (j = 1; j < mpiSize; j++) {
@@ -966,7 +967,6 @@ void rdf::RandomForest::trainForest(trainParams& tparams) {
     
     }
 
-    
     images -> poolReorder(idxVec);
 
     trees.resize(tp -> treeNum, NULL);

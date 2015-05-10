@@ -52,26 +52,22 @@ void takeFinalTime(double t_initial)
 
 }
 
-/**
- * Returns a number permutation from 0 to size
+
+/** \brief Return an unsorted vector of indices
+ *
+ *  \param[in] size Size of the resulting vector of indices.
+ *  \return An unordered vector of indices of the specified size.
  */
-vector <int> permutation(int size) {
-    
-    int i = 0;
-    vector<int> temp (size);
-    vector<int> index;
+std::vector<int> permutation(const int size) {
+    std::vector<int> indices(size);
 
-    for (; i < size; i++) {
-        temp[i] = i;
-    }
+    // Set the index vector from 0 to size.
+    std::iota(std::begin(indices), std::end(indices), 0);
 
-    while (temp.size() != 0) {
-        i = rand() % temp.size();
-        index.push_back(temp[i]);
-        temp.erase(temp.begin() + i);
-    }
+    // Shuffle the indices randomly
+    std::random_shuffle(std::begin(indices), std::end(indices));
 
-    return index;
+    return indices;
 }
 
 /**

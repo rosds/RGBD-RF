@@ -30,6 +30,9 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <queue>
 
+#include <random>
+#include <numeric>
+
 using namespace cv;
 
 // ----------------------------------------------------------------------
@@ -92,7 +95,13 @@ void takeFinalTime(double t_initial);
  */
 Vec3f DepthToWorld(int x, int y, unsigned int depthValue);
 
-vector <int> permutation(int size);
+
+/** \brief Return an unsorted vector of indices
+ *
+ *  \param[in] size Size of the resulting vector of indices.
+ *  \return An unordered vector of indices of the specified size.
+ */
+std::vector<int> permutation(const int size);
 
 // ----------------------------------------------------------------------
 // Random Forest Macros

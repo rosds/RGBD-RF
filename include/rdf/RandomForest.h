@@ -18,8 +18,7 @@ enum pixelSet {
     RIGHT = 1
 };
 
-/**
- *  @class trainParams
+/** \brief Random forest training parameters.
  *
  *  This structure is used to specify all the training parameters of the
  *  random forest.
@@ -77,6 +76,9 @@ struct SCParams {
 void* findSplitThread (void* args);
 
 
+
+/** \brief Random forest algorithm.
+ */
 class RandomForest {
     private:
       
@@ -90,7 +92,7 @@ class RandomForest {
         TrainData* td;
 
         /* Array of the trees of the forest */
-        vector <Node *> trees;
+        std::vector <Node *> trees;
 
         /**
          *  calcSetEntropy
@@ -372,7 +374,7 @@ class RandomForest {
          *  @param number of thresholds to generate.
          *
          */
-        void trainForest (trainParams& tparams);
+        void trainForest(trainParams& tparams);
 
         /**
          *  Write the traided trees to diferent text files in a
