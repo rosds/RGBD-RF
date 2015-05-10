@@ -8,7 +8,7 @@ images from the Kinect sensor.
 To build this project you need to have installed:
 
 * cmake
-* openmpi
+* OpenMPI
 
 Compile the library
 -------------------
@@ -27,6 +27,6 @@ Documentation
 To build the documentation you need to have Doxygen installed. The you
 just need to execute this:
 
-    make documentation
+    make doc
 
 in the build directory.
