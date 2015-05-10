@@ -1,18 +1,17 @@
-/**
- *  @file common.h
+/** \file common.h
  *
- *  @brief This file contain the include headers for the use of the
+ *  \brief This file contain the include headers for the use of the
  *  program and other common definitions.
- *
  */
 
-# ifndef COMMON_H
-# define COMMON_H
+#ifndef RGBD_RF_COMMON_HH__
+#define RGBD_RF_COMMON_HH__
 
 // ----------------------------------------------------------------------
 // C++ include headers
 // ----------------------------------------------------------------------
 
+#include <mpi.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <map>
@@ -25,7 +24,6 @@
 #include <sstream>
 #include <iostream>
 #include <pthread.h>
-#include <mpi.h>
 #include <algorithm>
 #include <dirent.h>
 #include <opencv2/core/core.hpp>
@@ -116,25 +114,25 @@ vector <int> permutation(int size);
 
 //COLOR
 
-# define FX_RGB 5.2921508098293293e+02
-# define FY_RGB 5.2556393630057437e+02
-# define CX_RGB 3.2894272028759258e+02
-# define CY_RGB 2.6748068171871557e+02
-# define K1_RGB 2.6451622333009589e-01
-# define K2_RGB -8.3990749424620825e-01
-# define P1_RGB -1.9922302173693159e-03
-# define P2_RGB 1.4371995932897616e-03
-# define K3_RGB 9.1192465078713847e-01
+#define FX_RGB 5.2921508098293293e+02
+#define FY_RGB 5.2556393630057437e+02
+#define CX_RGB 3.2894272028759258e+02
+#define CY_RGB 2.6748068171871557e+02
+#define K1_RGB 2.6451622333009589e-01
+#define K2_RGB -8.3990749424620825e-01
+#define P1_RGB -1.9922302173693159e-03
+#define P2_RGB 1.4371995932897616e-03
+#define K3_RGB 9.1192465078713847e-01
 
-# define FX_D 5.9421434211923247E+02
-# define FY_D 5.9104053696870778E+02
-# define CX_D 3.3930780975300314E+02
-# define CY_D 2.4273913761751615E+02
-# define K1_D -2.6386489753128833E-01
-# define K2_D 9.9966832163729757E-01
-# define P1_D -7.6275862143610667E-04
-# define P2_D 5.0350940090814270E-03
-# define K3_D -1.3053628089976321E+00
+#define FX_D 5.9421434211923247E+02
+#define FY_D 5.9104053696870778E+02
+#define CX_D 3.3930780975300314E+02
+#define CY_D 2.4273913761751615E+02
+#define K1_D -2.6386489753128833E-01
+#define K2_D 9.9966832163729757E-01
+#define P1_D -7.6275862143610667E-04
+#define P2_D 5.0350940090814270E-03
+#define K3_D -1.3053628089976321E+00
 
 
-# endif
+#endif // RGBD_RF_COMMON_HH__

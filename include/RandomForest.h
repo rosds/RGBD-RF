@@ -2,10 +2,10 @@
 #define RGBD_RF_RANDOM_FOREST_HH__
 
 #include <SplitCandidate.h>
-#include <TrainData.h>
 #include <rdf/common.h>
 #include <rdf/Image.h>
 #include <rdf/PixelInfo.h>
+#include <rdf/TrainData.h>
 #include <rdf/Node.h>
 #include <rdf/Offset.h>
 
