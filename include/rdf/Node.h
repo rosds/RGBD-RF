@@ -4,7 +4,7 @@
 #include <vector>
 #include <memory>
 
-#include <SplitCandidate.h>
+#include <rdf/SplitCandidate.h>
 
 namespace rdf {
 
