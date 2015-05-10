@@ -1,4 +1,4 @@
-#include <RandomForest.h>
+#include <rdf/RandomForest.h>
 
 /** \brief Thread function that test a number of split candidates and return the
  * best.
