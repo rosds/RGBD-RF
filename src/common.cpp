@@ -70,6 +70,7 @@ std::vector<int> permutation(const int size) {
     return indices;
 }
 
+
 /**
  * Convert to real world coordinates.
  */

@@ -107,15 +107,15 @@ std::vector<int> permutation(const int size);
 // Random Forest Macros
 // ----------------------------------------------------------------------
 
-# define WIDTH 640
-# define HEIGHT 480
-# define THREADS_PER_NODE 2
+#define WIDTH 640
+#define HEIGHT 480
+#define THREADS_PER_NODE 2
 
 // ----------------------------------------------------------------------
 // Image configuration macros
 // ----------------------------------------------------------------------
 
-# define NUMBER_OF_LABELS 6
+#define NUMBER_OF_LABELS 6
 
 // ----------------------------------------------------------------------
 // Kinect Parameters

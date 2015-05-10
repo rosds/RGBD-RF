@@ -108,60 +108,29 @@ class RandomForest {
          */
         float calcSetEntropy(NumRange& setRange);
 
-        /**
-         *  Information Gain
+        /** \brief Returns the information gain by splitting the training set by the 
+         * specified SplitCandidate.
          *
-         *  This function returns the total gain of information 
-         *  resulting after spliting the data set by the feature
-         *  phi between the begin and end index parameters.
-         *
-         *  @param phi is the SplitCandidate to evalute its entropy
-         *  @param setEntropy is the total entropy of the set
-         *  @param range of the train set.
-         *
-         *  @return the total entropy of the phi feature
+         *  \param[in] phi The SplitCandidate to evaluate.
+         *  \param[in] set_entropy The entropy of the set before the split.
+         *  \param[in] range The range of the training data where to evaluate the split 
+         *  candidate.
+         *  \return The information gain of the SplitCandidate evaluated on the 
+         *  specified range of the training data.
          *
          */
+        float G(
+            const SplitCandidate& phi,
+            const float setEntropy,
+            NumRange setRange
+        );
 
-        float G(SplitCandidate phi,
-                float setEntropy,
-                NumRange setRange);
-
-        /**
-         *  getPercentage
+        /** \brief Shannon Entropy function
          *
-         *  This function apply the SplitCandidate phi to the TrainData set 
-         *  between the begin and end index parameters. The percentage of
-         *  the labels ocurrences are divided in two vector left and 
-         *  right. Each of this vectors contains the percentage of each 
-         *  label in each set.
-         *  
-         *  @param phi is the feature to be applyed to the trainData set.
-         *  @param left is a vector that will contain the percentage of
-         *  each label in the left splited set by phi.
-         *  @param right is a vector that will contain the percentage of
-         *  eachlabel in the right splited set by phi.
-         *  @param leftCard is the cardinality of the resulting left
-         *  set.
-         *  @param rightCard is the cardinality of the resulting right
-         *  set.
-         *  @param range of the train set.
+         *  \param[in] probabilities is a vector that contains the percentage of
+         *  each label occurrence in a set.
          *
-         */
-        void getPercentage(SplitCandidate phi,
-                           vector <float>& left,
-                           vector <float>& right,
-                           unsigned& leftCard,
-                           unsigned& rightCard,
-                           NumRange range);
- 
-        /**
-         *  Shannon Entropy function
-         *
-         *  @param percentage is a vector that contains the percentage
-         *  of each label occurrence in a set.
-         *
-         *  @return the entropy associated with this percentages.
+         *  \return the entroply associated with this percentages.
          */
         float H(const std::vector<float>& percentage);
 

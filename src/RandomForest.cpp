@@ -178,10 +178,10 @@ rdf::SplitCandidate rdf::RandomForest::bestSplitCandidate(SCParams& params) {
         for (j = 0; j < thresholdNum; j++) {
        
             // Generate random threshold
-            t = randFloat(tp -> thresholdRange);
+            t = randFloat(tp->thresholdRange);
 
             //Generate the feature to test
-            phi = SplitCandidate (u, v, t);
+            phi = SplitCandidate(u, v, t);
             
             // Get phi information gain
             gain = G(phi, setEntropy, trainDataRange);
@@ -237,141 +237,80 @@ float rdf::RandomForest::calcSetEntropy(NumRange& setRange) {
     return H(percentages);
 }
 
-/**
- *  Information Gain
+
+/** \brief Returns the information gain by splitting the training set by the 
+ * specified SplitCandidate.
  *
- *  This function returns the total of information gain resulting 
- *  after spliting the data set by the feature phi between the begin
- *  and end index parameters.
- *
- *  @param phi is the SplitCandidate to evalute its entropy
- *  @param setEntropy is the total entropy of the set
- *  @param begin is the index of the data set to start the
- *  entropy calculation.
- *  @param end is the index of the data set to stop the
- *  entropy calculation.
- *
- *  @return the total entropy of the phi feature
+ *  \param[in] phi The SplitCandidate to evaluate.
+ *  \param[in] set_entropy The entropy of the set before the split.
+ *  \param[in] range The range of the training data where to evaluate the split 
+ *  candidate.
+ *  \return The information gain of the SplitCandidate evaluated on the 
+ *  specified range of the training data.
  *
  */
 float rdf::RandomForest::G(
-    SplitCandidate phi, 
-    float setEntropy, 
-    NumRange setRange
-) {
-    float gain;
-    vector <float> left;
-    vector <float> right;
-    unsigned leftCard;
-    unsigned rightCard;
-
-    // Calculate the split percentage
-    getPercentage(phi, 
-                  left, 
-                  right, 
-                  leftCard,
-                  rightCard, 
-                  setRange); 
-
-    gain = setEntropy;
-    gain -= ((double)leftCard / (double)(leftCard + rightCard)) * H(left);
-    gain -= ((double)rightCard / (double)(leftCard + rightCard)) * H(right);
-
-    return gain;
-}
-
-
-/**
- *  getPercentage
- *
- *  This function apply the SplitCandidate phi to the TrainData set between the
- *  begin and end index parameters. The percentage of the labels
- *  ocurrences are divided in two vector left and right. Each of this
- *  vectors contains the percentage of each label in each set.
- *  
- *  @param phi is the feature to be applyed to the trainData set.
- *  @param left is a vector that will contain the percentage of each
- *  label in the left splited set by phi.
- *  @param right is a vector that will contain the percentage of each
- *  label in the right splited set by phi.
- *  @param leftCard is the cardinality of the resulting left set.
- *  @param rightCard is the cardinality of the resulting right set.
- *  @param range of the train set.
- *
- */
-//CHECK
-void rdf::RandomForest::getPercentage(
-    SplitCandidate phi,
-    vector <float>& left,
-    vector <float>& right,
-    unsigned& leftCard,
-    unsigned& rightCard,
+    const SplitCandidate& phi, 
+    const float set_entropy, 
     NumRange range
 ) {
+    float l_size = 0.0f;
+    float r_size = 0.0f;
 
-    int i;
-    Label label;
-    pixelSet pSet;
-    TrainImage* imgPtr;
+    // vectors with the distribution of labels of each set after split.
+    std::vector<float> l_set(tp->labelNum, 0.0f);
+    std::vector<float> r_set(tp->labelNum, 0.0f);
 
-    // Clear and initialize the vectors.
-    left.clear();
-    right.clear();
-    left.resize(tp -> labelNum, 0.0f);
-    right.resize(tp -> labelNum, 0.0f);
-
-    // Initialize the cardinalities
-    leftCard = 0;
-    rightCard = 0;
-
-    // Classify each pixel and put it into a subset
-    for (i = range.start; i <= range.end; i++) {
+    // Classify each pixel with the split candiate
+    for (int i = range.start; i <= range.end; i++) {
        
-        imgPtr = images -> getImgPtr((*td)[i].id);
-        pSet = classifyPixel(phi, (*td)[i], (Image*)imgPtr);
+        const auto& imgPtr = images->getImgPtr((*td)[i].id);
 
-        label = imgPtr -> getLabel((*td)[i].x, (*td)[i].y);
+        // Get pixel real label.
+        const auto& label = imgPtr->getLabel((*td)[i].x, (*td)[i].y);
         
-        switch (pSet) {
+        switch (classifyPixel(phi, (*td)[i], (Image*)imgPtr)) {
         
             // Put the classified pixel in the left subset.
             case LEFT:
-                leftCard++;
-                left[label - 1] += 1.0f;
+                l_set[label - 1] += 1.0f;
+                l_size += 1.0f;
                 break;
 
             // Put the classified pixel in the right subset.
             case RIGHT:
-                rightCard++;
-                right[label - 1] += 1.0f;
+                r_set[label - 1] += 1.0f;
+                r_size += 1.0f;
                 break;
         }
     }
-    
-    // Average to get the percentages
-    for (i = 0; i < tp -> labelNum; i++) {
-        if (leftCard != 0) left[i] /= leftCard; 
-        if (rightCard != 0) right[i] /= rightCard; 
+
+    // Normalize distribution vectors
+    for (int i = 0; i < tp->labelNum; i++) {
+        r_set[i] /= r_size;
+        l_set[i] /= l_size;
     }
+    
+    return set_entropy - 
+        l_size / (l_size + r_size) * H(l_set) - 
+        r_size / (l_size + r_size) * H(r_set);
 }
- 
-/**
- *  Shannon Entropy function
+
+
+/** \brief Shannon Entropy function
  *
- *  @param probabilities is a vector that contains the percentage of
+ *  \param[in] probabilities is a vector that contains the percentage of
  *  each label occurrence in a set.
  *
- *  @return the entroply associated with this percentages.
+ *  \return the entroply associated with this percentages.
  */
-//CHECK
 float rdf::RandomForest::H(const std::vector<float>& probabilities) {
-    unsigned i;
-    float entropy;
+    float entropy = 0.0f;
 
-    entropy = 0.0f;
-    for (i = 0; i < probabilities.size(); i++) {
-        if (probabilities[i] == 0.0f) continue;
-        entropy += probabilities[i] * log2 (probabilities[i]);   
+    for (int i = 0; i < probabilities.size(); i++) {
+        if (probabilities[i] != 0.0f) {
+            entropy += probabilities[i] * log2(probabilities[i]);   
+        }
     }
 
     return fabs(entropy);
