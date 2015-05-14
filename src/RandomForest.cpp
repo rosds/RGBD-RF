@@ -166,7 +166,7 @@ rdf::SplitCandidate rdf::RandomForest::bestSplitCandidate(SCParams& params) {
     bestGain = 0.0f;
 
     // Get the entropy of the entire set
-    setEntropy = calcSetEntropy(trainDataRange);
+    setEntropy = H(labelDistribution(trainDataRange.start, trainDataRange.end));
 
     // Start generating and testing the features.
     for (i = 0; i < offsetNum; i++) {
@@ -195,46 +195,6 @@ rdf::SplitCandidate rdf::RandomForest::bestSplitCandidate(SCParams& params) {
         }
     }
     return bestPhi;
-}
-
-/**
- *  calcSetEntropy
- *
- *  This function calculate the entropy of the train set data
- *  between the begin and end index parameters.
- *
- *  @parma begin is the index from where to start the entropy
- *  calculation.
- *  @param end is the index where to stop the entropy
- *  calculation.
- *
- *  @return the shannon entropy of the train data set between
- *  the begin and end index parameters.
- *
- */
-//CHECK
-float rdf::RandomForest::calcSetEntropy(NumRange& setRange) {
-    int i;
-    Label label;
-    vector <float> percentages;
-
-    // Initialize percentage vector.
-    percentages.resize(tp -> labelNum, 0.0f);
-
-    // Calculate the sum of the labels
-    for (i = setRange.start; i <= setRange.end; i++) {
-        label = image_pool->getLabel((*td)[i]);
-
-        percentages[label - 1] += 1.0f;
-    }
-    
-
-    // Calculate the percentage for each label
-    for (i = 0; i < tp -> labelNum; i++) {
-        percentages[i] /= (setRange.end - setRange.start + 1);
-    }
-    
-    return H(percentages);
 }
 
 
@@ -395,45 +355,33 @@ bool rdf::RandomForest::testNode(
 
 }
 
-/**
- *  This function obtain the probability distribution of the
- *  labels in a range given of the train data pixels.
+
+/** \brief Returns a normalized vector with the dirstribution of each 
+ * type of label in the TrainData vector.
  *
- *  @param the range of pixels
- *  @param the train data set of pixels.
- *
- *  @return a vector with the propabilities
+ *  \param[in] begin First range index of the TrainData vector  
+ *  \param[in] begin Second range index of the TrainData vector  
+ *  \return A normalize vector with the distribution of each type of 
+ *  label
  */
-std::vector<float> rdf::RandomForest::probDist(NumRange setRange) {
-    int i;
-    float setSize;
-    Label label;
-    vector <float> percentages;
+std::vector<float> 
+rdf::RandomForest::labelDistribution(const size_t begin, const size_t end) {
+    const float total = static_cast<float>(end - begin + 1);
 
-    // Obtain the number of elements in the set
-    setSize = (setRange.end - setRange.start + 1);
+    std::vector<float> percentages(tp->labelNum, 0.0f);
 
-    // Initialize percentage vector.
-    percentages.resize(tp -> labelNum, 0.0f);
-    
-    // In case of errors.
-    if (setSize == 0) {
-        return percentages;
-    }
-
-    // Calculate the sum of the labels
-    for (i = setRange.start; i <= setRange.end; i++) {
-        label = image_pool->getLabel((*td)[i]);
+    // Count the number of each label type
+    for (size_t i = begin; i <= end; i++) {
+        Label label = image_pool->getLabel((*td)[i]);
         percentages[label - 1] += 1.0f;
     }
     
-    // Calculate the percentage for each label
-    for (i = 0; i < tp -> labelNum; i++) {
-        percentages[i] /= setSize;
+    // Normalize the percentage vector
+    for (auto& elem : percentages) {
+        elem /= total;
     }
     
     return percentages;
-
 }
 
 
@@ -549,7 +497,7 @@ void rdf::RandomForest::train(int treeID) {
     else if (nType == LEAF) {
         
         // Calculate leaf probability distribution
-        ((LeafNode*)*root)->pDist = probDist(range);
+        ((LeafNode*)*root)->pDist = labelDistribution(range.start, range.end);
         
         ((LeafNode *) *root) -> id = nodeCount;
         nodeCount++;
@@ -645,7 +593,7 @@ void rdf::RandomForest::train(int treeID) {
             ((SplitNode*) currentNode)->left_ = left;
 
             ((LeafNode*) left)->pDist = 
-                probDist(tmpRange);
+                labelDistribution(tmpRange.start, tmpRange.end);
                 
             // Labeling node
             ((LeafNode*) left)->id = nodeCount;
@@ -681,7 +629,7 @@ void rdf::RandomForest::train(int treeID) {
             
             ((SplitNode*)currentNode)->right_ = right;
             
-            ((LeafNode*) right)->pDist = probDist(tmpRange);
+            ((LeafNode*) right)->pDist = labelDistribution(tmpRange.start, tmpRange.end);
             
             // Labeling node
             ((LeafNode*) right)-> id = nodeCount;

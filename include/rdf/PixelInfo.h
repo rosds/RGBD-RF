@@ -2,6 +2,8 @@
 #define RGBD_RF_PIXELINFO_HH__
 
 #include <stdint.h>
+
+#include <rdf/common.h>
 #include <rdf/Offset.h>
 
 namespace rdf {

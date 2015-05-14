@@ -94,20 +94,6 @@ class RandomForest {
         /* Array of the trees of the forest */
         std::vector <Node *> trees;
 
-        /**
-         *  calcSetEntropy
-         *
-         *  This function calculate the entropy of the train set data in
-         *  the range given.
-         *
-         *  @parma range of the train data. 
-         *
-         *  @return the shannon entropy of the train data set between
-         *  the begin and end index parameters.
-         *
-         */
-        float calcSetEntropy(NumRange& setRange);
-
         /** \brief Returns the information gain by splitting the training set by the 
          * specified SplitCandidate.
          *
@@ -134,16 +120,15 @@ class RandomForest {
          */
         float H(const std::vector<float>& percentage);
 
-        /**
-         *  This function obtain the probability distribution of the
-         *  labels in a range given of the train data pixels.
+        /** \brief Returns a normalized vector with the dirstribution of each 
+         * type of label in the TrainData vector.
          *
-         *  @param the range of pixels
-         *  @param the train data set of pixels.
-         *
-         *  @return a vector with the propabilities
+         *  \param[in] begin First range index of the TrainData vector  
+         *  \param[in] begin Second range index of the TrainData vector  
+         *  \return A normalize vector with the distribution of each type of 
+         *  label
          */
-        std::vector<float> probDist (NumRange setRange);
+        std::vector<float> labelDistribution(const size_t begin, const size_t end);
 
         /**
          *  This function determines if the given node stays as a leaf

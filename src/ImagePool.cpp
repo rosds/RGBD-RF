@@ -78,6 +78,7 @@ unsigned rdf::ImagePool::getDepth(const PixelInfo& pi) {
     return images[pi.id].getDepth(pi.x, pi.y);
 }
 
+
 //CHECK
 rdf::TrainImage* rdf::ImagePool::getImgPtr(unsigned i) {
     return &(images[i]);
