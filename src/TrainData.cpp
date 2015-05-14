@@ -41,10 +41,3 @@ rdf::TrainData::TrainData(
         }
     }
 }
-
-/** \brief Returns the number of pixels
- *  \return The number of pixels.
- */
-int rdf::TrainData::size() {
-    return static_cast<int>(pixels.size());
-}

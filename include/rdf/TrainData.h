@@ -1,6 +1,7 @@
 #ifndef RGBD_RF_IMAGE_TRAIN_SET_HH__
 #define RGBD_RF_IMAGE_TRAIN_SET_HH__
 
+#include <memory>
 #include <rdf/PixelInfo.h>
 #include <rdf/ImagePool.h>
 
@@ -13,6 +14,8 @@ namespace rdf {
  */
 class TrainData {
     public:
+        typedef std::shared_ptr<TrainData> Ptr;
+
         /** \brief Default constructor. **/
         TrainData() = default;
 
@@ -35,13 +38,13 @@ class TrainData {
         /** \brief Returns the number of pixels
          *  \return The number of pixels.
          */
-        int size ();
+        int size () { return static_cast<int>(pixels.size()); }
         
         PixelInfo& operator[] (int i) { return pixels[i]; }
 
     private:
         /* Pixels from image to train */
-        vector <PixelInfo> pixels;
+        std::vector<PixelInfo> pixels;
 };
 
 } // namespace rdf 

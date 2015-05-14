@@ -89,7 +89,7 @@ class RandomForest {
         ImagePool* images;
 
         /* Train data */
-        TrainData* td;
+        TrainData::Ptr td;
 
         /* Array of the trees of the forest */
         std::vector <Node *> trees;
@@ -160,13 +160,10 @@ class RandomForest {
                        Node *currentNode,
                        NumRange range);
 
-        /**
-         *  Gets the depth of a given node of a tree by the father
-         *  chain.
-         *
-         *  @param node pointer
-         *
-         *  @return depth of the specified node
+        /** \brief Traverse the tree up to the root to figure out the nodes 
+         * depth.
+         *  \param[in] n Pointer to the node.
+         *  \return Depth of the node.
          */
         int getDepth (Node *n);
         

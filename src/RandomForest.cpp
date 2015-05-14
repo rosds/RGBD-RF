@@ -355,10 +355,10 @@ bool rdf::RandomForest::testNode(
     labeledEqual = false;
 
     // If all labels are equal then return leaf node.
-    firstLabel = images -> getLabel((*td)[range.start]);
+    firstLabel = images->getLabel((*td)[range.start]);
     for (i = range.start + 1; i < range.end; i++ ) {
        
-        nextLabel = images -> getLabel((*td)[i]);
+        nextLabel = images->getLabel((*td)[i]);
 
         if (firstLabel != nextLabel) {
             labeledEqual = false;
@@ -436,23 +436,18 @@ std::vector<float> rdf::RandomForest::probDist(NumRange setRange) {
 
 }
 
-/**
- *  Gets the depth of a given node of a tree by the father
- *  chain.
- *
- *  @param node pointer
- *
- *  @return depth of the specified node
+
+/** \brief Traverse the tree up to the root to figure out the nodes depth.
+ *  \param[in] n Pointer to the node.
+ *  \return Depth of the node.
  */
 int rdf::RandomForest::getDepth(Node *n) {
-    int depth;
+    int depth = 0;
     SplitNode *sNode = (SplitNode *) n;
-
-    depth = 0;
     
     if (sNode != nullptr) {
         while (sNode->parent_ != nullptr) {
-            depth ++;
+            depth++;
             sNode = dynamic_cast<SplitNode*>(sNode->parent_);
         }
     }
@@ -946,15 +941,14 @@ void rdf::RandomForest::trainForest(trainParams& tparams) {
         //TODO: recordar la forma de samplear los pixel (true para que
         //sea por label.
         if (rank == 0) {
-            td = new TrainData(tp -> samplePixelNum, *images, 
-                               startIdx, endIdx, false);
+            td = TrainData::Ptr(new TrainData(tp->samplePixelNum, *images, startIdx, endIdx, false));
         }
         else {
-            td = new TrainData(endIdx - startIdx + 1, tp -> samplePixelNum);
+            td = TrainData::Ptr(new TrainData(endIdx - startIdx + 1, tp->samplePixelNum));
         }
 
         // Synchronize the train data
-        for (j = 0; j < td -> size(); j++) {
+        for (j = 0; j < td->size(); j++) {
             MPI_Bcast(&(*td)[j].id, 1, MPI_UNSIGNED_SHORT, 0, MPI_COMM_WORLD);
             MPI_Bcast(&(*td)[j].x, 1, MPI_UNSIGNED_SHORT, 0, MPI_COMM_WORLD);
             MPI_Bcast(&(*td)[j].y, 1, MPI_UNSIGNED_SHORT, 0, MPI_COMM_WORLD);
