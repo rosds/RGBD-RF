@@ -1,1 +1,0 @@
-#include <rdf/RGBDImage.hpp>

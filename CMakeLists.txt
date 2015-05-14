@@ -12,7 +12,9 @@ include_directories(${OpenCV_INCLUDE_DIRS})
 link_directories(${OpenCV_LIBRARY_DIRS})
 add_definitions(${OpenCV_DEFINITIONS})
 
+# Find MPICH
 find_package(MPI REQUIRED)
+include_directories(${MPI_INCLUDE_PATH})
 
 # For use of mpi compiler instead of gcc
 #if(MPI_FOUND)
@@ -27,7 +29,18 @@ find_package(MPI REQUIRED)
 #   Random Forest limrary generation
 ##############################################################################
 
-set(RF_SRC 
+set(HFILES 
+    include/rdf/common.h
+    include/rdf/Image.h
+    include/rdf/ImagePool.h
+    include/rdf/Node.h
+    include/rdf/Offset.h
+    include/rdf/PixelInfo.h
+    include/rdf/RandomForest.h
+    include/rdf/TrainData.h
+)
+
+set(CPPFILES 
     src/common.cpp
     src/FloodFill.cpp
     src/Image.cpp
@@ -37,17 +50,17 @@ set(RF_SRC
     src/parseTreeArgs.cpp
     src/PixelInfo.cpp
     src/RandomForest.cpp
-    src/RGBDImage.cpp
     src/TrainData.cpp
 )
 
 include_directories(include)
 
-add_library(rdf SHARED ${RF_SRC})
+add_library(rdf SHARED ${HFILES} ${CPPFILES})
 
 ##############################################################################
 #   Requires C++11 standard support.
 ##############################################################################
+
 include(CheckCXXCompilerFlag)
 check_cxx_compiler_flag("-std=c++11" COMPILER_SUPPORTS_CXX11)
 check_cxx_compiler_flag("-std=c++0x" COMPILER_SUPPORTS_CXX0X)
@@ -61,8 +74,6 @@ else()
     message(FATAL_ERROR "The compiler ${CMAKE_CXX_COMPILER} has no C++11 
     support. Please use a different C++ compiler.")
 endif() 
-
-
 
 ##############################################################################
 #   Doxygen documentation
@@ -79,17 +90,5 @@ if(DOXYGEN_FOUND)
         COMMENT "Generating API documentation with Doxygen" VERBATIM)
 endif(DOXYGEN_FOUND)
 
-add_custom_target(samples
-        ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-        COMMENT "Generating sample code" VERBATIM
-        )
-
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
-
-include_directories(
-    include
-    ${MPI_INCLUDE_PATH}
-    ${OpenCV_INCLUDE_DIRS}
-)
