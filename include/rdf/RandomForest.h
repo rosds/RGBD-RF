@@ -86,7 +86,7 @@ class RandomForest {
         trainParams* tp;
 
         /* Images */
-        ImagePool* images;
+        ImagePool::Ptr image_pool;
 
         /* Train data */
         TrainData::Ptr td;

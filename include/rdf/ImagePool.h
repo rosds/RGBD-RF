@@ -1,6 +1,7 @@
 #ifndef RBGD_RF_IMAGEPOOL_HH__
 #define RBGD_RF_IMAGEPOOL_HH__
 
+#include <memory>
 #include <string>
 
 #include <rdf/common.h>
@@ -15,6 +16,7 @@ namespace rdf {
  */
 class ImagePool { 
     public:
+        typedef std::shared_ptr<ImagePool> Ptr;
 
         /** \brief Constructor.
          *  Loads the image content of the specified directory.
@@ -31,7 +33,7 @@ class ImagePool {
         void poolReorder(std::vector<int>& index_vector);
 
         /** \brief Returns the number of images in the pool. */
-        inline int poolSize() { return static_cast<int>(images.size()); }
+        inline int size() { return static_cast<int>(images.size()); }
 
         /** \brief this functions retrieves the pixel Label of an image given a
          *  PixelInfo object.
@@ -59,4 +61,4 @@ class ImagePool {
 
 } // namespace rdf
 
-# endif // RGBD_RF_IMAGEPOOL_HH__
+#endif // RGBD_RF_IMAGEPOOL_HH__

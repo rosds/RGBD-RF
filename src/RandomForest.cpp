@@ -63,7 +63,7 @@ int rdf::RandomForest::sortData(NumRange range, SplitCandidate f) {
     for (i = range.start; i <= range.end; i++){
  
         // Get the image pointer from imagePool with id of pixel.
-        imgPtr = images -> getImgPtr((*td)[i].id);
+        imgPtr = image_pool->getImgPtr((*td)[i].id);
         ps = classifyPixel(f, (*td)[i], (Image*)imgPtr);
         
         if ((findRight == false) && (ps == RIGHT)) {
@@ -223,7 +223,7 @@ float rdf::RandomForest::calcSetEntropy(NumRange& setRange) {
 
     // Calculate the sum of the labels
     for (i = setRange.start; i <= setRange.end; i++) {
-        label = images -> getLabel((*td)[i]);
+        label = image_pool->getLabel((*td)[i]);
 
         percentages[label - 1] += 1.0f;
     }
@@ -264,7 +264,7 @@ float rdf::RandomForest::G(
     // Classify each pixel with the split candiate
     for (int i = range.start; i <= range.end; i++) {
        
-        const auto& imgPtr = images->getImgPtr((*td)[i].id);
+        const auto& imgPtr = image_pool->getImgPtr((*td)[i].id);
 
         // Get pixel real label.
         const auto& label = imgPtr->getLabel((*td)[i].x, (*td)[i].y);
@@ -355,10 +355,10 @@ bool rdf::RandomForest::testNode(
     labeledEqual = false;
 
     // If all labels are equal then return leaf node.
-    firstLabel = images->getLabel((*td)[range.start]);
+    firstLabel = image_pool->getLabel((*td)[range.start]);
     for (i = range.start + 1; i < range.end; i++ ) {
        
-        nextLabel = images->getLabel((*td)[i]);
+        nextLabel = image_pool->getLabel((*td)[i]);
 
         if (firstLabel != nextLabel) {
             labeledEqual = false;
@@ -423,7 +423,7 @@ std::vector<float> rdf::RandomForest::probDist(NumRange setRange) {
 
     // Calculate the sum of the labels
     for (i = setRange.start; i <= setRange.end; i++) {
-        label = images -> getLabel((*td)[i]);
+        label = image_pool->getLabel((*td)[i]);
         percentages[label - 1] += 1.0f;
     }
     
@@ -863,8 +863,8 @@ void rdf::RandomForest::trainForest(trainParams& tparams) {
 
     tp = &tparams;
 
-        // Load images from directory
-    images = new ImagePool (tp -> imgDir);
+    // Load images from directory
+    image_pool = ImagePool::Ptr(new ImagePool (tp -> imgDir));
     
     // Obtain the rank and the number of processes in the MPI cluster.
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -875,7 +875,7 @@ void rdf::RandomForest::trainForest(trainParams& tparams) {
     divFactor = sqrt(mpiSize);
     tp -> offsetNum /= divFactor;
     tp -> thresholdNum /= divFactor;
-    tp -> imgNum = images -> poolSize();
+    tp -> imgNum = image_pool->size();
 
     std::vector<int> index_vector(tp->imgNum);
     
@@ -888,7 +888,7 @@ void rdf::RandomForest::trainForest(trainParams& tparams) {
         MPI_Bcast(&index, 1, MPI_INT, 0, MPI_COMM_WORLD);
     }
     
-    images->poolReorder(index_vector);
+    image_pool->poolReorder(index_vector);
 
     trees.resize(tp -> treeNum, NULL);
     trainImgNum = tp -> imgNum / tp -> treeNum;
@@ -914,7 +914,7 @@ void rdf::RandomForest::trainForest(trainParams& tparams) {
         }
         else{
             startIdx = i * trainImgNum;
-            endIdx = images -> poolSize() - 1;
+            endIdx = image_pool->size() - 1;
         }
         
         std::cout << "Tree " << i << std::endl;
@@ -928,7 +928,7 @@ void rdf::RandomForest::trainForest(trainParams& tparams) {
         //TODO: recordar la forma de samplear los pixel (true para que
         //sea por label.
         if (rank == 0) {
-            td = TrainData::Ptr(new TrainData(tp->samplePixelNum, *images, startIdx, endIdx, false));
+            td = TrainData::Ptr(new TrainData(tp->samplePixelNum, *image_pool, startIdx, endIdx, false));
         }
         else {
             td = TrainData::Ptr(new TrainData(endIdx - startIdx + 1, tp->samplePixelNum));
