@@ -862,8 +862,6 @@ void rdf::RandomForest::trainForest(trainParams& tparams) {
     MPI_Status status;
 
     tp = &tparams;
-    
-    vector <int> idxVec;
 
         // Load images from directory
     images = new ImagePool (tp -> imgDir);
@@ -879,29 +877,18 @@ void rdf::RandomForest::trainForest(trainParams& tparams) {
     tp -> thresholdNum /= divFactor;
     tp -> imgNum = images -> poolSize();
 
-    idxVec.resize(tp->imgNum);
+    std::vector<int> index_vector(tp->imgNum);
     
     if (rank == 0) {
-
-        idxVec = permutation(tp->imgNum);
-        
-        // Sending ordering of the pool.
-        for (j = 1; j < mpiSize; j++) {
-            for (i = 0; i < idxVec.size(); i++) {    
-                MPI_Send(&idxVec[i], 1, MPI_INT, j, 86, MPI_COMM_WORLD);
-            }
-        }
-    }
-    else { 
-    
-        // Receive pool reordering.
-        for (i = 0; i < idxVec.size(); i++) {    
-            MPI_Recv(&idxVec[i], 1, MPI_INT, 0, 86, MPI_COMM_WORLD, &status);
-        }
-    
+        index_vector = permutation(tp->imgNum);
     }
 
-    images -> poolReorder(idxVec);
+    // Synchronize the permutation of the indices.
+    for (auto& index : index_vector) {
+        MPI_Bcast(&index, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    }
+    
+    images->poolReorder(index_vector);
 
     trees.resize(tp -> treeNum, NULL);
     trainImgNum = tp -> imgNum / tp -> treeNum;
