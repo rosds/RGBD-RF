@@ -42,6 +42,16 @@ class TrainData {
         
         PixelInfo& operator[] (int i) { return pixels[i]; }
 
+        /** \brief Returns a pointer to the beginning of the pixel vector.
+         *  \return Iterator to the beginning of the pixel vector.
+         */
+        std::vector<PixelInfo>::iterator begin() { return pixels.begin(); }
+
+        /** \brief Returns a pointer to the end of the pixel vector.
+         *  \return Iterator to the end of the pixel vector.
+         */
+        std::vector<PixelInfo>::iterator end() { return pixels.end(); }
+
     private:
         /* Pixels from image to train */
         std::vector<PixelInfo> pixels;

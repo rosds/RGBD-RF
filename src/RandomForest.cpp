@@ -947,11 +947,11 @@ void rdf::RandomForest::trainForest(trainParams& tparams) {
             td = TrainData::Ptr(new TrainData(endIdx - startIdx + 1, tp->samplePixelNum));
         }
 
-        // Synchronize the train data
-        for (j = 0; j < td->size(); j++) {
-            MPI_Bcast(&(*td)[j].id, 1, MPI_UNSIGNED_SHORT, 0, MPI_COMM_WORLD);
-            MPI_Bcast(&(*td)[j].x, 1, MPI_UNSIGNED_SHORT, 0, MPI_COMM_WORLD);
-            MPI_Bcast(&(*td)[j].y, 1, MPI_UNSIGNED_SHORT, 0, MPI_COMM_WORLD);
+        // Synchronize each pixel in the training data.
+        for (auto& pixel : *td) {
+            MPI_Bcast(&(pixel.id), 1, MPI_UNSIGNED_SHORT, 0, MPI_COMM_WORLD);
+            MPI_Bcast(&(pixel.x), 1, MPI_UNSIGNED_SHORT, 0, MPI_COMM_WORLD);
+            MPI_Bcast(&(pixel.y), 1, MPI_UNSIGNED_SHORT, 0, MPI_COMM_WORLD);
         } 
 
         if (rank == 0) {
