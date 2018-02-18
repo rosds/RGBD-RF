@@ -1,32 +1,28 @@
 #ifndef RF_DEPTH_IMAGE_HH
 #define RF_DEPTH_IMAGE_HH
 
-#include <iostream>
 #include <algorithm>
+#include <cassert>
+#include <vector>
 
 namespace rf {
 
-template <size_t W, size_t H>
-struct DepthImage {
-  const size_t width = W;
-  const size_t height = H;
-  std::array<float, W * H> values{};
+class DepthImage final {
+  size_t _w;
+  size_t _h;
+  std::vector<float> _v{};
 
-  constexpr float operator()(size_t x, size_t y) const {
-    return values[y * W + x];
+ public:
+  float operator()(size_t x, size_t y) const noexcept {
+    assert(y * _w + x < _v.size());
+    return _v[y * _w + x];
   }
 
   template <class InputIter>
-  constexpr DepthImage(InputIter first, InputIter last) {
-    std::copy(first, last, values.begin()); 
-  }
-
-  friend std::ostream& operator<<(std::ostream& out, const DepthImage& di) {
-    out << '[';
-    for (const float value : di.values) {
-      out << value << ','; 
-    } 
-    return out << ']';
+  DepthImage(size_t width, size_t height, InputIter first, InputIter last)
+      : _w{width}, _h{height} {
+    assert(_w * _h == last - first);
+    std::copy(first, last, std::back_inserter(_v));
   }
 };
 

@@ -15,8 +15,7 @@ int main(int argc, char *argv[]) {
   image = imread(argv[1], CV_LOAD_IMAGE_ANYDEPTH | CV_LOAD_IMAGE_ANYCOLOR);
   image.convertTo(image, CV_32F);
 
-  rf::DepthImage<81, 86> di{ image.begin<float>(), image.end<float>() };
-  std::cout << di << std::endl;
+  rf::DepthImage di{ static_cast<size_t>(image.cols), static_cast<size_t>(image.rows), image.begin<float>(), image.end<float>() };
 
   if (!image.data) {
     std::cout << "Could not open or find the image" << std::endl;
