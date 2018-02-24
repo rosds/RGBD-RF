@@ -1,29 +1,38 @@
 #ifndef RF_IMAGE_HH
 #define RF_IMAGE_HH
 
+#include <cstdint>
 #include <cassert>
 #include <vector>
 #include <mutex>
 #include <rf/ImageFileLoader.hpp>
+#include <rf/Pixel.hpp>
 
 namespace rf {
 
 template <class T, class Loader>
 class Image : public Loader {
-  size_t _w;
-  size_t _h;
-  std::vector<T> _v{};
-  std::once_flag _load_image_flag;
+  mutable uint32_t _w;
+  mutable uint32_t _h;
+  mutable std::vector<T> _v{};
+  mutable std::once_flag _load_image_flag;
 
-  void load_image() noexcept {
+  void load_image() const noexcept {
     Loader::load(_w, _h, std::back_inserter(_v));  
   }
 
  public:
-  T operator()(size_t x, size_t y) noexcept {
+  using value_type = T;
+
+  T const& operator()(uint32_t x, uint32_t y) const noexcept {
     std::call_once(_load_image_flag, &Image::load_image, this);
     assert(y * _w + x < _v.size());
     return _v[y * _w + x];
+  }
+
+  Pixel<Image> pixel(uint32_t x, uint32_t y) const noexcept {
+    assert(y * _w + x < _v.size());
+    return Pixel<Image>(x, y, *this); 
   }
 };
 
