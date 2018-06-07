@@ -5,7 +5,6 @@ using namespace cv;
 
 int main(int argc, char *argv[]) {
   if (argc != 2) {
-    std::cout << " Usage: display_image ImageToLoadAndDisplay" << std::endl;
     return -1;
   }
 
