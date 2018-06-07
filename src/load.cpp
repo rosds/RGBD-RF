@@ -14,5 +14,12 @@ int main(int argc, char *argv[]) {
   auto p = di.pixel(49, 40);
   std::cout << di(49, 40) << std::endl;
   std::cout << p.value() << std::endl;
+
+  cv::namedWindow("Display", CV_WINDOW_NORMAL);
+  cv::Mat normalized;
+  cv::normalize(di, normalized, 1, 0, cv::NORM_MINMAX);
+  imshow("Display", normalized);
+
+  waitKey(0);
   return 0;
 }
