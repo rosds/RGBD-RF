@@ -1,16 +1,22 @@
 cmake_minimum_required(VERSION 3.9 FATAL_ERROR)
+project(RGBD-RF LANGUAGES CXX)
 
-project(RGBD-RF)
+set(CMAKE_CXX_STANDARD 17)
 
-# Find OpenCV library
-find_package(OpenCV REQUIRED)
+find_package(OpenCV REQUIRED COMPONENTS core highgui imgcodecs)
 
-add_library(stdc++fs UNKNOWN IMPORTED)
-set_property(TARGET stdc++fs PROPERTY IMPORTED_LOCATION "/usr/lib/gcc/x86_64-linux-gnu/7/libstdc++fs.a")
+add_library(rf INTERFACE)
+target_include_directories(rf
+  INTERFACE
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
+)
 
-
-include_directories (include)
-add_executable (load src/load.cpp)
-target_link_libraries (load ${OpenCV_LIBRARIES} stdc++fs)
-
-set_property(TARGET load PROPERTY CXX_STANDARD 17)
+add_executable(load src/load.cpp)
+target_link_libraries(load
+    PRIVATE
+        opencv_core
+        opencv_highgui
+        opencv_imgcodecs
+        rf
+)

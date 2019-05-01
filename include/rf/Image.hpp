@@ -13,26 +13,24 @@ namespace rf {
 
 template <typename _Tp, class Loader>
 class Image final : public cv::Mat_<_Tp>, public Loader {
- public:
-  using value_type = _Tp;
+   public:
+    using value_type = _Tp;
 
-  /** \brief Load the image content into this structure
-   *
-   */
-  void load() { Loader::load(static_cast<cv::Mat_<_Tp>*>(this)); }
+    /** \brief Load the image content into this structure
+     *
+     */
+    void load() { Loader::load(static_cast<cv::Mat_<_Tp>*>(this)); }
 
-  Pixel<Image> pixel(uint32_t x, uint32_t y) const noexcept {
-    return Pixel<Image>(x, y, *this);
-  }
+    Pixel<Image> pixel(uint32_t x, uint32_t y) const noexcept {
+        return Pixel<Image>(x, y, *this);
+    }
 
-  operator cv::Mat() const {
-    return *static_cast<cv::Mat_<_Tp>*>(this); 
-  }
+    operator cv::Mat() const { return *static_cast<cv::Mat_<_Tp>*>(this); }
 };
 
 using DepthImage = Image<float, ImageFileLoader>;
 using LabelImage = Image<uint8_t, ImageFileLoader>;
 
-} /* rf  */
+}  // namespace rf
 
 #endif /* end of include guard: RF_IMAGE_HH */

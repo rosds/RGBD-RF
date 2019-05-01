@@ -3,33 +3,31 @@
 
 #include <algorithm>
 #include <cstdint>
-#include <experimental/filesystem>
+#include <string>
 #include <string_view>
 #include <vector>
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
-namespace fs = std::experimental::filesystem;
-
 namespace rf {
 
 class ImageFileLoader {
-  fs::path _path;
+    std::string path_;
 
- public:
-  ImageFileLoader() = default;
+   public:
+    ImageFileLoader() = default;
 
-  void path(std::string_view p) noexcept { _path = p; }
-  std::string_view path() const noexcept { return _path.c_str(); }
+    void path(std::string_view p) noexcept { path_ = p; }
+    std::string_view path() const noexcept { return path_.c_str(); }
 
-  template <class Image>
-  void load(Image* img) const {
-    *img = cv::imread(_path.c_str(),
-                     CV_LOAD_IMAGE_ANYDEPTH | CV_LOAD_IMAGE_ANYCOLOR);
-  }
+    template <class Image>
+    void load(Image* img) const {
+        *img = cv::imread(path_.c_str(),
+                          CV_LOAD_IMAGE_ANYDEPTH | CV_LOAD_IMAGE_ANYCOLOR);
+    }
 };
 
-} /* rf  */
+}  // namespace rf
 
 #endif /* end of include guard: RF_IMAGE_FILE_LOADER_HH */
