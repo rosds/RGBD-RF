@@ -5,9 +5,9 @@ set(CMAKE_CXX_STANDARD 17)
 
 find_package(OpenCV REQUIRED COMPONENTS core highgui imgcodecs)
 
-add_library(rf INTERFACE)
+add_library(rf "src/rf/Image.cpp")
 target_include_directories(rf
-  INTERFACE
+  PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
 )

@@ -24,8 +24,6 @@ class Image final : public cv::Mat_<_Tp>, public Loader {
     Pixel<Image> pixel(uint32_t x, uint32_t y) const noexcept {
         return Pixel<Image>(x, y, *this);
     }
-
-    operator cv::Mat() const { return *static_cast<cv::Mat_<_Tp>*>(this); }
 };
 
 using DepthImage = Image<float, ImageFileLoader>;
