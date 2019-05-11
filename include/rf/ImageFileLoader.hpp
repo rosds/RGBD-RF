@@ -15,10 +15,12 @@ struct ImageFileLoader {
         auto img = cv::imread(path.data(),
                               CV_LOAD_IMAGE_ANYDEPTH | CV_LOAD_IMAGE_ANYCOLOR);
 
-        auto copy = std::vector<PixelT>(img.begin<PixelT>(), img.end<PixelT>());
+        if constexpr (std::is_same_v<PixelT, float>) {
+            img.convertTo(img, CV_32F);
+        }
 
         return {static_cast<size_t>(img.cols), static_cast<size_t>(img.rows),
-                std::move(copy)};
+                img.begin<PixelT>(), img.end<PixelT>()};
     }
 };
 

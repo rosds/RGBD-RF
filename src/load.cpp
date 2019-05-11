@@ -10,11 +10,14 @@ int main(int argc, char *argv[]) {
     std::cout << depth_image(49, 40).value() << std::endl;
 
     cv::namedWindow("Display", CV_WINDOW_NORMAL);
-    cv::Mat normalized =
-        cv::Mat(depth_image.cols(), depth_image.rows(), CV_32F,
-                static_cast<std::vector<float>>(depth_image).data());
 
-    cv::normalize(normalized, normalized, 1, 0, cv::NORM_MINMAX);
+    std::vector<float> data = std::move(depth_image);
+
+    auto src_img =
+        cv::Mat(depth_image.cols(), depth_image.rows(), CV_32F, data.data());
+
+    cv::Mat normalized;
+    cv::normalize(src_img, normalized, 0.0, 1.0, cv::NORM_MINMAX);
     cv::imshow("Display", normalized);
 
     cv::waitKey(0);
