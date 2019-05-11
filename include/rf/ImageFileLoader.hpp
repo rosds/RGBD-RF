@@ -1,30 +1,24 @@
 #ifndef RF_IMAGE_FILE_LOADER_HH
 #define RF_IMAGE_FILE_LOADER_HH
 
-#include <algorithm>
-#include <cstdint>
-#include <string>
-#include <string_view>
-#include <vector>
+#include <rf/Image.hpp>
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
+#include <string_view>
 
 namespace rf {
 
-class ImageFileLoader {
-    std::string path_;
+struct ImageFileLoader {
+    template <typename PixelT>
+    static Image<PixelT> Load(std::string_view const& path) {
+        auto img = cv::imread(path.data(),
+                              CV_LOAD_IMAGE_ANYDEPTH | CV_LOAD_IMAGE_ANYCOLOR);
 
-   public:
-    ImageFileLoader() = default;
+        auto copy = std::vector<PixelT>(img.begin<PixelT>(), img.end<PixelT>());
 
-    void path(std::string_view p) noexcept { path_ = p; }
-    std::string_view path() const noexcept { return path_.c_str(); }
-
-    template <class Image>
-    void load(Image* img) const {
-        *img = cv::imread(path_.c_str(),
-                          CV_LOAD_IMAGE_ANYDEPTH | CV_LOAD_IMAGE_ANYCOLOR);
+        return {static_cast<size_t>(img.cols), static_cast<size_t>(img.rows),
+                std::move(copy)};
     }
 };
 

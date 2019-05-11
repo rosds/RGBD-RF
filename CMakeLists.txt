@@ -5,19 +5,29 @@ set(CMAKE_CXX_STANDARD 17)
 
 find_package(OpenCV REQUIRED COMPONENTS core highgui imgcodecs)
 
-add_library(rf "src/rf/Image.cpp")
+add_library(rf 
+    "src/rf/Image.cpp"
+    "include/rf/ImageFileLoader.hpp"
+    "include/rf/Image.hpp"
+    "include/rf/Pixel.hpp"
+)
+
 target_include_directories(rf
   PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
 )
 
-add_executable(load src/load.cpp)
-target_link_libraries(load
-    PRIVATE
+target_link_libraries(rf
+    PUBLIC
         opencv_core
         opencv_highgui
         opencv_imgcodecs
+)
+
+add_executable(load src/load.cpp)
+target_link_libraries(load
+    PRIVATE
         rf
 )
 

@@ -1,33 +1,44 @@
 #ifndef RF_IMAGE_HH
 #define RF_IMAGE_HH
 
-#include <cassert>
-#include <cstdint>
-#include <rf/ImageFileLoader.hpp>
 #include <rf/Pixel.hpp>
-#include <vector>
 
-#include <opencv2/core/core.hpp>
+#include <optional>
+#include <vector>
 
 namespace rf {
 
-template <typename _Tp, class Loader>
-class Image final : public cv::Mat_<_Tp>, public Loader {
+template <typename PixelT>
+class Image {
    public:
-    using value_type = _Tp;
+    using value_type = PixelT;
 
-    /** \brief Load the image content into this structure
-     *
-     */
-    void load() { Loader::load(static_cast<cv::Mat_<_Tp>*>(this)); }
+    Image() = default;
 
-    Pixel<Image> pixel(uint32_t x, uint32_t y) const noexcept {
-        return Pixel<Image>(x, y, *this);
+    template <typename... Args>
+    Image(size_t rows, size_t cols, Args&&... args)
+        : rows_{rows}, cols_{cols}, data_{std::forward<Args>(args)...} {}
+
+    std::optional<PixelT> operator()(int row, int col) const noexcept {
+        if ((0 <= row) && (row < rows_) && (0 <= col) && (col < cols_)) {
+            return {data_[row * cols_ + col]};
+        } else {
+            return std::nullopt;
+        }
     }
+
+    size_t cols() const noexcept { return cols_; }
+    size_t rows() const noexcept { return rows_; }
+    operator std::vector<PixelT>() { return data_; }
+
+   private:
+    size_t rows_{0};
+    size_t cols_{0};
+    std::vector<PixelT> data_{};
 };
 
-using DepthImage = Image<float, ImageFileLoader>;
-using LabelImage = Image<uint8_t, ImageFileLoader>;
+using DepthImage = Image<float>;
+using LabelImage = Image<uint8_t>;
 
 }  // namespace rf
 
