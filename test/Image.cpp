@@ -1,4 +1,4 @@
-#include <rf/Image.hpp>
+#include <rf/Image.h>
 
 #include <gtest/gtest.h>
 #include <opencv2/core/core.hpp>

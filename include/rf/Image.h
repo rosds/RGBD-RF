@@ -20,13 +20,7 @@ class Image {
     Image(size_t rows, size_t cols, Args&&... args)
         : rows_{rows}, cols_{cols}, data_{std::forward<Args>(args)...} {}
 
-    std::optional<pixel_type> operator()(int row, int col) const noexcept {
-        if ((0 <= row) && (row < rows_) && (0 <= col) && (col < cols_)) {
-            return {pixel_type(row, col, std::cref(*this))};
-        } else {
-            return std::nullopt;
-        }
-    }
+    std::optional<pixel_type> operator()(int row, int col) const noexcept;
 
     size_t cols() const noexcept { return cols_; }
     size_t rows() const noexcept { return rows_; }
@@ -45,8 +39,9 @@ class Image {
 };
 
 using DepthImage = Image<float>;
-using LabelImage = Image<uint8_t>;
 
 }  // namespace rf
+
+#include "impl/Image.hpp"
 
 #endif /* end of include guard: RF_IMAGE_HH */
