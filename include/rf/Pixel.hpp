@@ -1,7 +1,9 @@
 #ifndef RF_PIXEL_HH
 #define RF_PIXEL_HH
 
-#include <cstdint>
+#include <cinttypes>
+#include <functional>
+#include <optional>
 
 namespace rf {
 
@@ -12,20 +14,23 @@ struct Offset {
 
 template <class Image>
 class Pixel {
-    uint32_t _x;
-    uint32_t _y;
-    Image const& _img;
-
    public:
     using value_type = typename Image::value_type;
 
-    value_type const& value() const noexcept { return _img(_x, _y); }
-    value_type const& value(Offset const& off) const noexcept {
-        return _img(_x + off.x, _y + off.y);
+    value_type const& value() const noexcept {
+        return img_.get().value(x_, y_);
     }
 
-    Pixel(uint32_t x, uint32_t y, Image const& img) noexcept
-        : _x{x}, _y{y}, _img{img} {}
+    Pixel() = delete;
+    friend std::optional<Pixel> Image::operator()(int, int) const;
+
+   private:
+    Pixel(uint32_t x, uint32_t y, std::reference_wrapper<const Image> img)
+        : x_{x}, y_{y}, img_{img} {}
+
+    uint32_t x_;
+    uint32_t y_;
+    std::reference_wrapper<const Image> img_;
 };
 
 }  // namespace rf

@@ -12,6 +12,7 @@ template <typename PixelT>
 class Image {
    public:
     using value_type = PixelT;
+    using pixel_type = Pixel<Image<PixelT>>;
 
     Image() = default;
 
@@ -19,9 +20,9 @@ class Image {
     Image(size_t rows, size_t cols, Args&&... args)
         : rows_{rows}, cols_{cols}, data_{std::forward<Args>(args)...} {}
 
-    std::optional<PixelT> operator()(int row, int col) const noexcept {
+    std::optional<pixel_type> operator()(int row, int col) const noexcept {
         if ((0 <= row) && (row < rows_) && (0 <= col) && (col < cols_)) {
-            return {data_[row * cols_ + col]};
+            return {pixel_type(row, col, std::cref(*this))};
         } else {
             return std::nullopt;
         }
@@ -29,7 +30,13 @@ class Image {
 
     size_t cols() const noexcept { return cols_; }
     size_t rows() const noexcept { return rows_; }
-    operator std::vector<PixelT>() { return data_; }
+
+    friend pixel_type;
+
+   protected:
+    value_type const& value(int row, int col) const noexcept {
+        return data_[row * cols_ + col];
+    }
 
    private:
     size_t rows_{0};

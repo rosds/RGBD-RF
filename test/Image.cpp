@@ -34,9 +34,9 @@ class RandomFloatImageFixture : public ::testing::Test {
 TEST_F(RandomFloatImageFixture, WhenComparingToControl_ThenEqualValues) {
     for (int col = 0; col < image.cols(); ++col) {
         for (int row = 0; row < image.rows(); ++row) {
-            auto value = image(row, col);
-            EXPECT_TRUE(value.has_value());
-            EXPECT_EQ(*value, control_image.at<float>(row, col));
+            auto pixel = image(row, col);
+            EXPECT_TRUE(pixel.has_value());
+            EXPECT_EQ(pixel->value(), control_image.at<float>(row, col));
         }
     }
 }
