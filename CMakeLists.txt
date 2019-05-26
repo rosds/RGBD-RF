@@ -25,12 +25,6 @@ target_link_libraries(rf
         opencv_imgcodecs
 )
 
-add_executable(load src/load.cpp)
-target_link_libraries(load
-    PRIVATE
-        rf
-)
-
 option(ENABLE_TESTING "Enable tests" OFF)
 
 if(${ENABLE_TESTING})
