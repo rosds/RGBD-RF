@@ -1,7 +1,7 @@
 #ifndef RF_IMAGE_HH
 #define RF_IMAGE_HH
 
-#include <rf/Pixel.hpp>
+#include <rf/Pixel.h>
 
 #include <optional>
 #include <vector>

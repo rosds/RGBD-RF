@@ -9,7 +9,7 @@ add_library(rf
     "include/rf/Image.h"
     "include/rf/ImageFileLoader.hpp"
     "include/rf/LabelImage.h"
-    "include/rf/Pixel.hpp"
+    "include/rf/Pixel.h"
     "src/rf/Image.cpp"
 )
 
