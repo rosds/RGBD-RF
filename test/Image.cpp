@@ -34,11 +34,16 @@ class RandomFloatImageFixture : public ::testing::Test {
 TEST_F(RandomFloatImageFixture, WhenComparingToControl_ThenEqualValues) {
     for (int col = 0; col < image.cols(); ++col) {
         for (int row = 0; row < image.rows(); ++row) {
-            auto pixel = image(row, col);
-            EXPECT_TRUE(pixel.has_value());
-            EXPECT_EQ(pixel->value(), control_image.at<float>(row, col));
+            EXPECT_EQ(image(row, col).value(),
+                      control_image.at<float>(row, col));
         }
     }
+}
+
+TEST_F(RandomFloatImageFixture, WhenAccessingOutsideImage_ThenNullOpt) {
+    EXPECT_FALSE(image(100, -100));
+    EXPECT_FALSE(image(-100, 400));
+    EXPECT_FALSE(image(300, 400));
 }
 
 }  // namespace

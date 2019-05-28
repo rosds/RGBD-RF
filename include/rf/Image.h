@@ -20,17 +20,14 @@ class Image {
     Image(size_t rows, size_t cols, Args&&... args)
         : rows_{rows}, cols_{cols}, data_{std::forward<Args>(args)...} {}
 
-    std::optional<pixel_type> operator()(int row, int col) const noexcept;
+    pixel_type operator()(int row, int col) const noexcept;
 
     size_t cols() const noexcept { return cols_; }
     size_t rows() const noexcept { return rows_; }
 
-    friend pixel_type;
-
    protected:
-    value_type const& value(int row, int col) const noexcept {
-        return data_[row * cols_ + col];
-    }
+    friend pixel_type;
+    std::optional<value_type> value(int row, int col) const noexcept;
 
    private:
     size_t rows_{0};

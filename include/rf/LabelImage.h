@@ -24,9 +24,9 @@ class LabelImage : public LabelPolicy {
     explicit LabelImage(ImageT const& img) : data_{img} {}
 
     std::optional<label_type> operator()(int row, int col) const noexcept {
-        auto pixel = data_(row, col);
-        if (pixel.has_value()) {
-            return LabelPolicy::decode(pixel->value());
+        const auto pixel = data_(row, col);
+        if (pixel) {
+            return LabelPolicy::decode(pixel.value());
         } else {
             return std::nullopt;
         }
