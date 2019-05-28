@@ -11,6 +11,7 @@ add_library(rf
     "include/rf/LabelImage.h"
     "include/rf/Pixel.h"
     "src/rf/Image.cpp"
+    "src/rf/LabelImage.cpp"
 )
 
 target_include_directories(rf
