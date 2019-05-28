@@ -5,11 +5,12 @@ set(CMAKE_CXX_STANDARD 17)
 
 find_package(OpenCV REQUIRED COMPONENTS core highgui imgcodecs)
 
-add_library(rf 
-    "src/rf/Image.cpp"
+add_library(rf
+    "include/rf/Image.h"
     "include/rf/ImageFileLoader.hpp"
-    "include/rf/Image.hpp"
+    "include/rf/LabelImage.h"
     "include/rf/Pixel.hpp"
+    "src/rf/Image.cpp"
 )
 
 target_include_directories(rf

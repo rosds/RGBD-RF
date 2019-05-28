@@ -1,7 +1,7 @@
 #ifndef RF_IMAGE_FILE_LOADER_HH
 #define RF_IMAGE_FILE_LOADER_HH
 
-#include <rf/Image.hpp>
+#include <rf/Image.h>
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
