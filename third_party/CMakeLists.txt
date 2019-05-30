@@ -35,8 +35,3 @@ endif()
 set(YAML_CPP_BUILD_TESTS OFF)
 add_subdirectory(${CMAKE_CURRENT_BINARY_DIR}/yaml-cpp-src
                  ${CMAKE_CURRENT_BINARY_DIR}/yaml-cpp-build)
-
-# The current version of YAML-CPP does not provide INCLUDE_DIRECTORIES property
-target_include_directories(
-  yaml-cpp
-  PUBLIC $<BUILD_INTERFACE:${YAML_CPP_SOURCE_DIR}/include>)

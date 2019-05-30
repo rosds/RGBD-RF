@@ -26,7 +26,7 @@ target_include_directories(
   train_forest
   PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
          $<INSTALL_INTERFACE:include>)
-target_link_libraries(train_forest PUBLIC yaml-cpp)
+target_link_libraries(train_forest PRIVATE yaml-cpp)
 
 include(CTest)
 if(BUILD_TESTING)
