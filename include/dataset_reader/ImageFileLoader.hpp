@@ -1,18 +1,18 @@
-#ifndef RF_IMAGE_FILE_LOADER_HH
-#define RF_IMAGE_FILE_LOADER_HH
+#ifndef IMAGE_FILE_LOADER_HH
+#define IMAGE_FILE_LOADER_HH
 
 #include <rf/Image.h>
 
+#include <boost/filesystem.hpp>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
-#include <string_view>
 
-namespace rf {
+namespace fs = boost::filesystem;
 
 struct ImageFileLoader {
     template <typename PixelT>
-    static Image<PixelT> Load(std::string_view const& path) {
-        auto img = cv::imread(path.data(),
+    static rf::Image<PixelT> Load(fs::path const& path) {
+        auto img = cv::imread(path.string(),
                               CV_LOAD_IMAGE_ANYDEPTH | CV_LOAD_IMAGE_ANYCOLOR);
 
         if constexpr (std::is_same_v<PixelT, float>) {
@@ -24,6 +24,4 @@ struct ImageFileLoader {
     }
 };
 
-}  // namespace rf
-
-#endif /* end of include guard: RF_IMAGE_FILE_LOADER_HH */
+#endif  // IMAGE_FILE_LOADER_HH
