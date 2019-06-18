@@ -41,7 +41,7 @@ class Pixel {
     std::optional<value_type> value_;
     std::reference_wrapper<const Image> img_;
 
-    friend Pixel Image::operator()(int, int) const;
+    friend Pixel Image::operator()(int, int) const noexcept;
 };
 
 }  // namespace rf

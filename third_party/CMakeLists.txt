@@ -32,6 +32,6 @@ if(result)
   message(FATAL_ERROR "CMake step for yaml-cpp failed: ${result}")
 endif()
 
-set(YAML_CPP_BUILD_TESTS OFF)
+set(YAML_CPP_BUILD_TESTS OFF CACHE BOOL "Disable yaml-cpp tests")
 add_subdirectory(${CMAKE_CURRENT_BINARY_DIR}/yaml-cpp-src
                  ${CMAKE_CURRENT_BINARY_DIR}/yaml-cpp-build)

@@ -1,0 +1,31 @@
+#ifndef DATASET_READER_RGBD_WASHINGTON_H
+#define DATASET_READER_RGBD_WASHINGTON_H
+
+#include <rf/LabelImage.h>
+#include <rf/TrainingImage.h>
+
+#include <boost/filesystem.hpp>
+#include <vector>
+
+namespace fs = boost::filesystem;
+
+/**
+ * https://rgbd-dataset.cs.washington.edu/index.html
+ */
+class RgbdWashingtonDataset {
+   public:
+    using DepthImage = rf::Image<float>;
+    using LabelImage = rf::LabelImage<rf::Image<uint8_t>>;
+    using TrainingImage = rf::TrainingImage<DepthImage, LabelImage>;
+
+    RgbdWashingtonDataset() = default;
+
+    void emplace_image_directory(fs::path directory);
+
+    std::vector<TrainingImage> load() const;
+
+   private:
+    std::vector<fs::path> directories_{};
+};
+
+#endif  // DATASET_READER_RGBD_WASHINGTON_H

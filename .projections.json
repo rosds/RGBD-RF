@@ -1,0 +1,19 @@
+{
+    "*.h": {
+        "type": "header",
+        "alternate": "{dirname}/impl/{basename}.hpp",
+        "path": ["rf", "ds"]
+    },
+    "**/impl/*.hpp": {
+        "type": "impl",
+        "alternate": "{}.h"
+    },
+    "**/test/*.cpp": {
+        "type": "test",
+        "alternate": "{dirname}/include/{}.h"
+    },
+    "**/src/*.cpp": {
+        "type": "source",
+        "alternate": "{dirname}/include/{}.h"
+    }
+}

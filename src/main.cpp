@@ -1,4 +1,4 @@
-#include <dataset_reader/RgbdWashington.h>
+#include <ds/RgbdWashington.h>
 
 #include <yaml-cpp/parser.h>
 #include <yaml-cpp/yaml.h>
