@@ -2,6 +2,7 @@
 #define DATASET_READER_RGBD_WASHINGTON_H
 
 #include <rf/LabelImage.h>
+#include <rf/TrainSet.h>
 #include <rf/TrainingImage.h>
 
 #include <boost/filesystem.hpp>
@@ -17,12 +18,13 @@ class RgbdWashingtonDataset {
     using DepthImage = rf::Image<float>;
     using LabelImage = rf::LabelImage<rf::Image<uint8_t>>;
     using TrainingImage = rf::TrainingImage<DepthImage, LabelImage>;
+    using TrainSet = rf::TrainSet<TrainingImage>;
 
     RgbdWashingtonDataset() = default;
 
     void emplace_image_directory(fs::path directory);
 
-    std::vector<TrainingImage> load() const;
+    TrainSet load() const;
 
    private:
     std::vector<fs::path> directories_{};

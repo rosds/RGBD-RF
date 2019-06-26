@@ -32,9 +32,8 @@ void RgbdWashingtonDataset::emplace_image_directory(fs::path directory) {
     }
 }
 
-std::vector<typename RgbdWashingtonDataset::TrainingImage>
-RgbdWashingtonDataset::load() const {
-    auto images = std::vector<TrainingImage>{};
+typename RgbdWashingtonDataset::TrainSet RgbdWashingtonDataset::load() const {
+    auto images = TrainSet{};
     const std::regex depth_image_filename{"(\\w+)_depthcrop.png"};
     for (const auto& directory : directories_) {
         for (const auto& entry : fs::directory_iterator(directory)) {
