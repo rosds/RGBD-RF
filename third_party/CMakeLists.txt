@@ -1,37 +1,26 @@
-# googletest
-configure_file(googletest.CMakeLists.txt googletest-download/CMakeLists.txt)
-execute_process(
-  COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
-  RESULT_VARIABLE result
-  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/googletest-download)
-if(result)
-  message(FATAL_ERROR "CMake step for googletest failed: ${result}")
-endif()
-execute_process(
-  COMMAND ${CMAKE_COMMAND} --build .
-  RESULT_VARIABLE result
-  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/googletest-download)
-if(result)
-  message(FATAL_ERROR "CMake step for googletest failed: ${result}")
-endif()
-add_subdirectory(${CMAKE_CURRENT_BINARY_DIR}/googletest-src
-                 ${CMAKE_CURRENT_BINARY_DIR}/googletest-build)
+include(FetchContent)
 
-# yaml-cpp
-configure_file(yaml-cpp.CMakeLists.txt yaml-cpp-download/CMakeLists.txt)
-execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
-                RESULT_VARIABLE result
-                WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/yaml-cpp-download)
-if(result)
-  message(FATAL_ERROR "CMake step for yaml-cpp failed: ${result}")
-endif()
-execute_process(COMMAND ${CMAKE_COMMAND} --build .
-                RESULT_VARIABLE result
-                WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/yaml-cpp-download)
-if(result)
-  message(FATAL_ERROR "CMake step for yaml-cpp failed: ${result}")
+FetchContent_Declare(
+  extern_yaml
+  GIT_REPOSITORY https://github.com/jbeder/yaml-cpp.git
+  GIT_TAG        yaml-cpp-0.6.3)
+
+FetchContent_GetProperties(extern_yaml)
+if(NOT extern_yaml_POPULATED)
+  FetchContent_Populate(extern_yaml)
+  set(YAML_CPP_BUILD_TESTS OFF CACHE BOOL "disable yaml-cpp tests")
+  add_subdirectory(
+    ${extern_yaml_SOURCE_DIR}
+    ${extern_yaml_BINARY_DIR})
 endif()
 
-set(YAML_CPP_BUILD_TESTS OFF CACHE BOOL "Disable yaml-cpp tests")
-add_subdirectory(${CMAKE_CURRENT_BINARY_DIR}/yaml-cpp-src
-                 ${CMAKE_CURRENT_BINARY_DIR}/yaml-cpp-build)
+FetchContent_Declare(
+  googletest
+  GIT_REPOSITORY https://github.com/google/googletest.git
+  GIT_TAG        release-1.10.0)
+
+FetchContent_GetProperties(googletest)
+if(NOT googletest_POPULATED)
+  FetchContent_Populate(googletest)
+  add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR})
+endif()

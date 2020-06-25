@@ -1,10 +1,9 @@
-cmake_minimum_required(VERSION 3.9 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.11 FATAL_ERROR)
 project(RGBD-RF LANGUAGES CXX)
 
 include(CTest)
 add_subdirectory(third_party)
 find_package(OpenCV REQUIRED COMPONENTS core highgui imgcodecs)
-find_package(Boost REQUIRED COMPONENTS filesystem program_options)
 
 add_subdirectory(rf)
 add_subdirectory(ds)
@@ -19,6 +18,4 @@ target_include_directories(
 target_link_libraries(train_forest
                       rf
                       ds
-                      yaml-cpp
-                      Boost::filesystem
-                      Boost::program_options)
+                      yaml-cpp)

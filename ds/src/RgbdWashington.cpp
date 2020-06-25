@@ -1,17 +1,14 @@
 #include <ds/RgbdWashington.h>
 
-#include <boost/filesystem.hpp>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <regex>
-
-namespace fs = boost::filesystem;
 
 struct ImageFileLoader {
     template <typename PixelT>
     static rf::Image<PixelT> Load(fs::path const& path) {
         auto img = cv::imread(path.string(),
-                              CV_LOAD_IMAGE_ANYDEPTH | CV_LOAD_IMAGE_ANYCOLOR);
+                              cv::IMREAD_ANYDEPTH | cv::IMREAD_ANYCOLOR);
 
         if constexpr (std::is_same_v<PixelT, float>) {
             img.convertTo(img, CV_32F);
@@ -37,7 +34,7 @@ typename RgbdWashingtonDataset::TrainSet RgbdWashingtonDataset::load() const {
     const std::regex depth_image_filename{"(\\w+)_depthcrop.png"};
     for (const auto& directory : directories_) {
         for (const auto& entry : fs::directory_iterator(directory)) {
-            if (!fs::is_regular(entry)) {
+            if (!fs::is_regular_file(entry)) {
                 continue;
             }
 

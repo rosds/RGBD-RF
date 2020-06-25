@@ -5,10 +5,10 @@
 #include <rf/TrainSet.h>
 #include <rf/TrainingImage.h>
 
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include <vector>
 
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 
 /**
  * https://rgbd-dataset.cs.washington.edu/index.html

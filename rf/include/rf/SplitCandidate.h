@@ -1,14 +1,20 @@
-#ifndef RF_SPLIT_CANDIDATE_H
-#define RF_SPLIT_CANDIDATE_H
+#pragma once
 
 namespace rf {
 
-template <typename Pixel>
-class SplitCandidate {
-   public:
-    bool classify(Pixel const&) const noexcept {}
+enum class SplitResult : uint8_t {
+    LEFT = 0,
+    RIGHT = 1,
 };
 
-}  // namespace rf
+template <typename Derived, typename Data>
+class SplitCandidate {
+   public:
+    [[nodiscard]] SplitResult classify(Data const& d) const noexcept {
+        return Derived::operator()(d);
+    }
+};
 
-#endif  // RF_SPLIT_CANDIDATE_H
+class SplitCandidateGenerator {};
+
+}  // namespace rf
