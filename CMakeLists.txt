@@ -7,6 +7,7 @@ find_package(OpenCV REQUIRED COMPONENTS core highgui imgcodecs)
 
 add_subdirectory(rf)
 add_subdirectory(ds)
+add_subdirectory(examples)
 
 
 add_executable(train_forest src/main.cpp)
