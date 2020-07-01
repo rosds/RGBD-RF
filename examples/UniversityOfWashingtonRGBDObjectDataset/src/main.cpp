@@ -20,11 +20,11 @@ std::string replaceSuffix(std::string_view string, std::string_view suffix,
   return copy;
 }
 
-std::vector<Image> findImages(fs::path const& directory,
-                              std::string_view color_suffix,
-                              std::string_view depth_suffix,
-                              std::string_view label_suffix) {
-  auto images = std::vector<Image>{};
+std::vector<LabeledImage> findImages(fs::path const& directory,
+                                     std::string_view color_suffix,
+                                     std::string_view depth_suffix,
+                                     std::string_view label_suffix) {
+  auto images = std::vector<LabeledImage>{};
 
   for (auto file : fs::directory_iterator(directory)) {
     if (file.is_directory()) {
@@ -39,7 +39,7 @@ std::vector<Image> findImages(fs::path const& directory,
                           replaceSuffix(filename, color_suffix, label_suffix);
 
         assert(fs::exists(depth_file) && fs::exists(label_file));
-        LabeledImage(file, depth_file, label_file);
+        images.emplace_back(file, depth_file, label_file);
       }
     }
   }
@@ -77,16 +77,29 @@ int main(int argc, char* argv[]) {
   const auto label_suffix = node["label_suffix"].as<std::string>();
 
   // Image Pool
-  ImagePool pool();
+  ImagePool pool{};
 
   // gather the images for each class
   const auto& classes = node["classes"];
   for (auto it = classes.begin(); it != classes.end(); ++it) {
     const auto label = it->first.as<std::string>();
     const auto directory = fs::path{it->second.as<std::string>()};
-    const auto images =
+    auto images =
         findImages(directory, color_suffix, depth_suffix, label_suffix);
+
+    pool.addObjectType(label, std::move(images));
   }
+
+  // Shuffle
+  pool.shuffle();
+
+  // We split the dataset into train, validation and test.
+  auto [train, validation, test] = splitImagePool(pool, 0.2, 0.2);
+
+  std::cout << "Total Images:      " << pool.size() << "\n\n";
+  std::cout << "Training Images:   " << train.size() << '\n';
+  std::cout << "Validation Images: " << validation.size() << '\n';
+  std::cout << "Test images:       " << test.size() << '\n';
 
   return 0;
 }

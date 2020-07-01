@@ -39,3 +39,11 @@ class LabeledImage : public Image {
  private:
   fs::path labels_;
 };
+
+/**
+ *
+ *  This is the object to be classified by the tree. It his represented as a
+ *  lightweight reference to a image's pixel.
+ *
+ */
+class PixelReference {};

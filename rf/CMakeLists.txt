@@ -1,4 +1,4 @@
-add_library(rf "src/Image.cpp" "src/LabelImage.cpp")
+add_library(rf "src/label.cpp" "src/Image.cpp" "src/LabelImage.cpp")
 
 target_include_directories(
   rf
