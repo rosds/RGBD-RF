@@ -28,8 +28,10 @@ std::vector<LabeledImage> findImages(fs::path const& directory,
 
   for (auto file : fs::directory_iterator(directory)) {
     if (file.is_directory()) {
+      // append the sub-folder images
       auto sub = findImages(file, color_suffix, depth_suffix, label_suffix);
-      std::move(sub.begin(), sub.end(), std::back_inserter(images));
+      images.insert(images.end(), std::make_move_iterator(sub.begin()),
+                    std::make_move_iterator(sub.end()));
     } else {
       const auto& filename = file.path().filename().string();
       if (hasSuffix(filename, color_suffix)) {
@@ -100,6 +102,10 @@ int main(int argc, char* argv[]) {
   std::cout << "Training Images:   " << train.size() << '\n';
   std::cout << "Validation Images: " << validation.size() << '\n';
   std::cout << "Test images:       " << test.size() << '\n';
+
+  // Each iteration of the algorithm it will sample 20 x 50 pixels
+  train.setSamplesPerClass(20);
+  train.setSamplesPerImage(50);
 
   return 0;
 }

@@ -52,13 +52,9 @@ class StringLabelMap {
   using LabelType = Label<size_t>;
 
   StringLabelMap() = default;
-  StringLabelMap(StringLabelMap const&) = delete;
-  StringLabelMap& operator=(StringLabelMap const&) = delete;
 
   // Adds a label to the set
-  void addLabel(std::string label);
-
-  std::optional<LabelType> operator[](std::string_view string) const noexcept;
+  LabelType toLabel(std::string label);
 
  private:
   std::unordered_map<std::string, LabelType> map_{};

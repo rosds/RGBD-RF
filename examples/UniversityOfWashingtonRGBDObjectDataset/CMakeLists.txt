@@ -1,5 +1,5 @@
-add_executable(example src/main.cpp src/image_pool.cpp)
-target_link_libraries(example yaml-cpp rf)
+add_executable(example src/image.cpp src/image_pool.cpp src/main.cpp )
+target_link_libraries(example yaml-cpp opencv_core opencv_imgcodecs rf)
 set_target_properties(example 
   PROPERTIES 
     CXX_STANDARD 17

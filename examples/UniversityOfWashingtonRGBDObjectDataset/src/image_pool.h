@@ -21,7 +21,7 @@ class TrainingSet;
  */
 class ImagePool {
  public:
-  using ImageIterator = std::vector<LabeledImage>::const_iterator;
+  using ImageIterator = std::vector<LabeledImage>::iterator;
 
   ImagePool() = default;
   ImagePool(ImagePool const&) = delete;
@@ -39,7 +39,7 @@ class ImagePool {
 
  private:
   friend std::tuple<TrainingSet, TrainingSet, TrainingSet> splitImagePool(
-      ImagePool const& pool, double validationSize, double testSize);
+      ImagePool& pool, double validationSize, double testSize);
 
   std::unordered_map<std::string, std::vector<LabeledImage>> pool_{};
 };
@@ -54,20 +54,24 @@ class TrainingSet : public rf::TrainSet<PixelReference, LabelType> {
   using ImageIterator = ImagePool::ImageIterator;
 
  public:
-  using ImageRanges = std::vector<std::pair<ImageIterator, ImageIterator>>;
-  explicit TrainingSet(ImageRanges&& ls) noexcept : classRanges_{ls} {};
+  using ImageRanges =
+      std::vector<std::tuple<std::string, ImageIterator, ImageIterator>>;
 
- public:  // TrainSet
-  TrainingExample sample() override {
-    auto m = rf::StringLabelMap{};
-    m.addLabel("pepe");
-    return {PixelReference{}, m["pepe"].value()};
-  }
+  TrainingSet(ImageRanges&& ls) noexcept : classRanges_{ls} {};
 
   size_t size() const noexcept;
+  void setSamplesPerClass(size_t n) { samplesPerClass_ = n; }
+  void setSamplesPerImage(size_t n) { samplesPerImage_ = n; }
+
+ public:  // TrainSet
+  std::vector<TrainingExample> sample() override;
 
  private:
+  size_t samplesPerImage_{0};
+  size_t samplesPerClass_{0};
   ImageRanges classRanges_{};
+  rf::StringLabelMap labels_{};
+  std::vector<std::reference_wrapper<LabeledImage>> loadedImages_{};
 };
 
 /**
@@ -78,5 +82,4 @@ class TrainingSet : public rf::TrainSet<PixelReference, LabelType> {
  *  \param testSize float betweeen 0 and 1.
  */
 std::tuple<TrainingSet, TrainingSet, TrainingSet> splitImagePool(
-
-    ImagePool const& pool, double validationSize, double testSize);
+    ImagePool& pool, double validationSize, double testSize);

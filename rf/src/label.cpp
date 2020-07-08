@@ -2,13 +2,9 @@
 
 namespace rf {
 
-void StringLabelMap::addLabel(std::string label) {
-  map_.emplace(std::move(label), LabelType(map_.size()));
-}
-
-std::optional<StringLabelMap::LabelType> StringLabelMap::operator[](
-    std::string_view string) const noexcept {
-  return std::nullopt;
+StringLabelMap::LabelType StringLabelMap::toLabel(std::string label) {
+  auto entry = map_.emplace(std::move(label), LabelType(map_.size()));
+  return entry.first->second;
 }
 
 }  // namespace rf

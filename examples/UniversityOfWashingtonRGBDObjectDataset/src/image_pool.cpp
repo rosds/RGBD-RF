@@ -26,13 +26,50 @@ size_t ImagePool::size() const noexcept {
 size_t TrainingSet::size() const noexcept {
   size_t count = 0;
   for (auto const& range : classRanges_) {
-    count += std::distance(range.first, range.second);
+    const auto begin = std::get<1>(range);
+    const auto end = std::get<2>(range);
+    count += std::distance(begin, end);
   }
   return count;
 }
 
+std::vector<TrainingSet::TrainingExample> TrainingSet::sample() {
+  std::vector<TrainingExample> samples;
+
+  const size_t classCount = classRanges_.size();
+  for (const auto& range : classRanges_) {
+    const auto label = labels_.toLabel(std::get<0>(range));
+    const auto begin = std::get<1>(range);
+    const auto end = std::get<2>(range);
+
+    // Release the images
+    for (auto& img : loadedImages_) {
+      img.get().release();
+    }
+
+    loadedImages_.clear();
+    std::sample(begin, end, std::back_inserter(loadedImages_), samplesPerClass_,
+                std::mt19937{std::random_device{}()});
+
+    // load the images
+    for (auto& img : loadedImages_) {
+      img.get().load();
+    }
+
+    for (const auto& image : loadedImages_) {
+      auto pixels = sampleLabeledPixels(image, samplesPerImage_);
+      std::transform(pixels.begin(), pixels.end(), std::back_inserter(samples),
+                     [&label](const auto& pixelReference) {
+                       return std::make_pair(pixelReference, label);
+                     });
+    }
+  }
+
+  return samples;
+}
+
 std::tuple<TrainingSet, TrainingSet, TrainingSet> splitImagePool(
-    ImagePool const& imagePool, double validationSize, double testSize) {
+    ImagePool& imagePool, double validationSize, double testSize) {
   // check validationSize and testSize are acceptable
   auto isValid = [](double d) { return d >= 0.0 && d <= 1.0; };
   if (!isValid(validationSize) || !isValid(testSize) ||
@@ -41,30 +78,31 @@ std::tuple<TrainingSet, TrainingSet, TrainingSet> splitImagePool(
   }
 
   double const trainSize = 1.0 - validationSize - testSize;
-  auto const& pool = imagePool.pool_;
+  auto& pool = imagePool.pool_;
 
   TrainingSet::ImageRanges trainPairs{};
   TrainingSet::ImageRanges validationPairs{};
   TrainingSet::ImageRanges testPairs{};
 
   // take
-  for (auto const& cls : pool) {
+  for (auto& cls : pool) {
     // images of this class
-    const auto& images = cls.second;
-    const size_t imagesCount = images.size();
+    auto label = cls.first;
+    auto& images = cls.second;
+    size_t imagesCount = images.size();
 
     // Number of training images to take
     const size_t cut1 = static_cast<size_t>(imagesCount * trainSize);
     const size_t cut2 =
         cut1 + static_cast<size_t>(imagesCount * validationSize);
 
-    auto it = images.cbegin();
-    trainPairs.emplace_back(it, it + cut1);
-    validationPairs.emplace_back(it + cut1, it + cut2);
-    testPairs.emplace_back(it + cut2, images.cend());
+    auto it = images.begin();
+
+    validationPairs.emplace_back(label, it, it + cut1);
+    validationPairs.emplace_back(label, it + cut1, it + cut2);
+    testPairs.emplace_back(label, it + cut2, images.end());
   }
 
-  return {TrainingSet(std::move(trainPairs)),
-          TrainingSet(std::move(validationPairs)),
-          TrainingSet(std::move(testPairs))};
+  return std::make_tuple(trainPairs, std::move(validationPairs),
+                         std::move(testPairs));
 }

@@ -14,7 +14,7 @@ class TrainSet {
  public:
   using TrainingExample = std::pair<InputData, LabelType>;
   virtual ~TrainSet() {}
-  virtual TrainingExample sample() = 0;
+  virtual std::vector<TrainingExample> sample() = 0;
 };
 
 }  // namespace rf
