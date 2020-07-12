@@ -1,9 +1,12 @@
+#include <rf/core/tree.h>
+
 #include <cassert>
 #include <filesystem>
 #include <iostream>
 #include <vector>
 
 #include "image_pool.h"
+#include "pixel_classifier.h"
 #include "yaml-cpp/yaml.h"
 
 namespace fs = std::filesystem;
@@ -20,7 +23,8 @@ std::string replaceSuffix(std::string_view string, std::string_view suffix,
   return copy;
 }
 
-std::vector<LabeledImage> findImages(fs::path const& directory,
+std::vector<LabeledImage> findImages(fs::path const& directory, rf::Label label,
+                                     rf::Label bgLabel,
                                      std::string_view color_suffix,
                                      std::string_view depth_suffix,
                                      std::string_view label_suffix) {
@@ -29,7 +33,8 @@ std::vector<LabeledImage> findImages(fs::path const& directory,
   for (auto file : fs::directory_iterator(directory)) {
     if (file.is_directory()) {
       // append the sub-folder images
-      auto sub = findImages(file, color_suffix, depth_suffix, label_suffix);
+      auto sub = findImages(file, label, bgLabel, color_suffix, depth_suffix,
+                            label_suffix);
       images.insert(images.end(), std::make_move_iterator(sub.begin()),
                     std::make_move_iterator(sub.end()));
     } else {
@@ -41,7 +46,7 @@ std::vector<LabeledImage> findImages(fs::path const& directory,
                           replaceSuffix(filename, color_suffix, label_suffix);
 
         assert(fs::exists(depth_file) && fs::exists(label_file));
-        images.emplace_back(file, depth_file, label_file);
+        images.emplace_back(file, depth_file, label_file, label, bgLabel);
       }
     }
   }
@@ -78,6 +83,11 @@ int main(int argc, char* argv[]) {
   const auto depth_suffix = node["depth_suffix"].as<std::string>();
   const auto label_suffix = node["label_suffix"].as<std::string>();
 
+  // Map from strings to rf::Label
+  auto& labelRegistry = rf::LabelRegistry<std::string>::instance();
+  const auto bgLabel =
+      rf::LabelRegistry<std::string>::instance().getLabel("background");
+
   // Image Pool
   ImagePool pool{};
 
@@ -86,10 +96,10 @@ int main(int argc, char* argv[]) {
   for (auto it = classes.begin(); it != classes.end(); ++it) {
     const auto label = it->first.as<std::string>();
     const auto directory = fs::path{it->second.as<std::string>()};
-    auto images =
-        findImages(directory, color_suffix, depth_suffix, label_suffix);
+    auto images = findImages(directory, labelRegistry.getLabel(label), bgLabel,
+                             color_suffix, depth_suffix, label_suffix);
 
-    pool.addObjectType(label, std::move(images));
+    pool.append(std::move(images));
   }
 
   // Shuffle
@@ -106,6 +116,17 @@ int main(int argc, char* argv[]) {
   // Each iteration of the algorithm it will sample 20 x 50 pixels
   train.setSamplesPerClass(20);
   train.setSamplesPerImage(50);
+
+  rf::TreeParameters stoppingCriteria;
+  stoppingCriteria.minSamplesPerNode = 20;
+  stoppingCriteria.maxDepth = 30;
+  stoppingCriteria.candidatesToGeneratePerNode = 1000;
+  auto tree =
+      rf::trainTree<PixelClassifier>(train, validation, stoppingCriteria);
+
+  // Classification rate
+  std::cout << "\nTest classification rate: " << rf::evaluateTree(tree, train)
+            << '\n';
 
   return 0;
 }

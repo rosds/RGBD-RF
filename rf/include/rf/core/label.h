@@ -1,63 +1,38 @@
 #pragma once
 
-#include <optional>
-#include <string>
-#include <type_traits>
-#include <unordered_map>
+#include <stdint.h>
+
+#include <algorithm>
+#include <vector>
 
 namespace rf {
-
-class StringLabelMap;
+using Label = uint8_t;
 
 /**
- *
- *  This is just some strong type for a classification label.
- *
- *  Labels are only ment to be use to separate or classify things. Inside the
- *  process of building the tree, the labels are only compared to each other,
- *  nothing more is expected from them.
- *
- *  These things are not ment to be instantiated by the user directly, but
- *  instead us something like the StringLabelMap.
- *
+ *  This is just a convenient class to map external labels to internal labels
  */
-template <typename T = size_t>
-class Label {
-  friend class StringLabelMap;
-
-  explicit Label(T const& value) : value_(value) {}
-  explicit Label(T&& value) noexcept(
-      std::is_nothrow_move_constructible<T>::value)
-      : value_(std::move(value)) {}
-
-  explicit operator T const &() const noexcept { return value_; }
+template <typename T>
+class LabelRegistry {
+  LabelRegistry() = default;
 
  public:
-  bool operator==(Label const& other) const noexcept {
-    return value_ == other.value_;
+  static LabelRegistry& instance() {
+    static LabelRegistry<T> instance{};
+    return instance;
+  }
+
+  [[nodiscard]] Label getLabel(T const& t) noexcept {
+    auto it = std::find_if(map_.begin(), map_.end(),
+                           [&t](auto const& p) { return p.first == t; });
+    if (it != map_.end()) {
+      return it->second;
+    } else {
+      map_.emplace_back(t, map_.size());
+      return map_.back().second;
+    }
   }
 
  private:
-  T value_;
+  std::vector<std::pair<T, Label>> map_{};
 };
-
-/**
- *
- *  Just a simple map for string <=> labels. Used to register labels and to map
- *  back and forward between strings and labels.
- *
- */
-class StringLabelMap {
- public:
-  using LabelType = Label<size_t>;
-
-  StringLabelMap() = default;
-
-  // Adds a label to the set
-  LabelType toLabel(std::string label);
-
- private:
-  std::unordered_map<std::string, LabelType> map_{};
-};
-
 }  // namespace rf

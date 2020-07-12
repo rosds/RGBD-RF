@@ -1,13 +1,12 @@
 #pragma once
 
+#include <rf/core/label.h>
+#include <rf/core/train_set.h>
+
 #include <unordered_map>
 #include <vector>
 
 #include "image.h"
-#include "rf/core/label.h"
-#include "rf/core/train_set.h"
-
-using LabelType = rf::StringLabelMap::LabelType;
 
 class TrainingSet;
 
@@ -21,43 +20,42 @@ class TrainingSet;
  */
 class ImagePool {
  public:
-  using ImageIterator = std::vector<LabeledImage>::iterator;
+  using ImageList = std::vector<LabeledImage>;
+  using ImageIterator = ImageList::iterator;
 
   ImagePool() = default;
   ImagePool(ImagePool const&) = delete;
   ImagePool& operator=(ImagePool const&) = delete;
 
-  void addObjectType(std::string label, std::vector<LabeledImage>&& images) {
-    pool_.emplace(std::move(label), std::move(images));
-  }
+  // Append more images to the pool
+  void append(ImageList&& images);
 
-  // Just shuffle the images
+  // shuffle the images
   void shuffle();
 
-  // Return the total of images in the pool
-  size_t size() const noexcept;
+  [[nodiscard]] size_t size() const noexcept { return pool_.size(); }
 
  private:
   friend std::tuple<TrainingSet, TrainingSet, TrainingSet> splitImagePool(
       ImagePool& pool, double validationSize, double testSize);
 
-  std::unordered_map<std::string, std::vector<LabeledImage>> pool_{};
+  ImageList pool_{};
 };
+
+using TrainingExample = rf::TrainingExample<PixelReference>;
 
 /**
  *
  *  This class will refer to the image pool and act as a sort of iterator.
  *
  */
-class TrainingSet : public rf::TrainSet<PixelReference, LabelType> {
-  using rf::TrainSet<PixelReference, LabelType>::TrainingExample;
+class TrainingSet : public rf::TrainSet<PixelReference> {
+ public:
   using ImageIterator = ImagePool::ImageIterator;
 
- public:
-  using ImageRanges =
-      std::vector<std::tuple<std::string, ImageIterator, ImageIterator>>;
-
-  TrainingSet(ImageRanges&& ls) noexcept : classRanges_{ls} {};
+  TrainingSet(ImageIterator begin, ImageIterator end) noexcept
+      : begin_{begin}, end_{end} {}
+  ~TrainingSet();
 
   size_t size() const noexcept;
   void setSamplesPerClass(size_t n) { samplesPerClass_ = n; }
@@ -65,12 +63,16 @@ class TrainingSet : public rf::TrainSet<PixelReference, LabelType> {
 
  public:  // TrainSet
   std::vector<TrainingExample> sample() override;
+  std::unique_ptr<TrainSetIterator> iter() override;
+
+  [[nodiscard]] ImageIterator begin() const noexcept { return begin_; }
+  [[nodiscard]] ImageIterator end() const noexcept { return end_; }
 
  private:
   size_t samplesPerImage_{0};
   size_t samplesPerClass_{0};
-  ImageRanges classRanges_{};
-  rf::StringLabelMap labels_{};
+  ImageIterator begin_{};
+  ImageIterator end_{};
   std::vector<std::reference_wrapper<LabeledImage>> loadedImages_{};
 };
 

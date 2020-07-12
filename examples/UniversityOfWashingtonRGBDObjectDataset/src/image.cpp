@@ -24,6 +24,9 @@ class ColorImageHandler : public ImageHandler {
     }
   }
 
+  int rows() const noexcept override { return img_.rows; }
+  int cols() const noexcept override { return img_.cols; }
+
  private:
   bool loaded_{false};
   cv::Mat img_{};
@@ -32,6 +35,13 @@ class ColorImageHandler : public ImageHandler {
 class DepthImageHandler : public ImageHandler {
  public:
   DepthImageHandler(fs::path const& path) noexcept : ImageHandler(path) {}
+
+  [[nodiscard]] double getValue(int row, int col) const noexcept {
+    if (loaded_ && row >= 0 && row < img_.rows && col >= 0 && col < img_.cols) {
+      return img_.at<float>(row, col);
+    }
+    return 0.0;
+  }
 
  public:  // ImageHandle
   void load() override {
@@ -49,6 +59,9 @@ class DepthImageHandler : public ImageHandler {
     }
   }
 
+  int rows() const noexcept override { return img_.rows; }
+  int cols() const noexcept override { return img_.cols; }
+
  private:
   bool loaded_{false};
   cv::Mat img_{};
@@ -60,32 +73,46 @@ class DepthImageHandler : public ImageHandler {
  *  value. The reason is to enable sampling from only these pixels.
  *
  */
-struct LabelImageHandler : public ImageHandler {
+class LabelImageHandler : public ImageHandler {
+ public:
   LabelImageHandler(fs::path const& path) : ImageHandler(path) {}
 
-  using PixelCoordinates = std::pair<int, int>;
-  std::vector<PixelCoordinates> pixels{};
+  bool isLabeled(int row, int col) const noexcept {
+    if (loaded_ && row >= 0 && row < img_.rows && col >= 0 && col < img_.cols) {
+      const auto& pixel = img_.at<cv::Vec3b>(row, col);
+      return cv::norm(pixel) > 0.0;
+    }
+
+    return false;
+  }
 
  public:  // ImageHandle
   void load() override {
-    const auto img =
-        cv::imread(path_.string(), cv::IMREAD_ANYDEPTH | cv::IMREAD_ANYCOLOR);
+    if (!loaded_) {
+      img_ =
+          cv::imread(path_.string(), cv::IMREAD_ANYDEPTH | cv::IMREAD_ANYCOLOR);
 
-    // the label image should be a
-    if (img.type() != CV_8UC3) {
-      throw std::runtime_error("unexpected label image type");
-    }
-
-    for (int i = 0; i < img.rows; ++i) {
-      for (int j = 0; j < img.cols; ++j) {
-        const auto& pixel = img.at<cv::Vec3b>(i, j);
-        if (cv::norm(pixel) > 0.0) {
-          pixels.emplace_back(i, j);
-        }
+      // the label image should be a
+      if (img_.type() != CV_8UC1) {
+        throw std::runtime_error("unexpected label image type");
       }
+      loaded_ = true;
     }
   }
-  void release() override { pixels.clear(); }
+
+  void release() override {
+    if (loaded_) {
+      img_.release();
+      loaded_ = false;
+    }
+  }
+
+  int rows() const noexcept { return img_.rows; }
+  int cols() const noexcept { return img_.cols; }
+
+ private:
+  bool loaded_{false};
+  cv::Mat img_{};
 };
 
 Image::Image(fs::path const& color, fs::path const& depth)
@@ -103,9 +130,21 @@ void Image::release() {
   depth_->release();
 }
 
+int Image::rows() const noexcept { return color_->rows(); }
+int Image::cols() const noexcept { return color_->cols(); }
+
+double Image::getDepthValue(int row, int col) const noexcept {
+  auto img = dynamic_cast<DepthImageHandler*>(depth_.get());
+  return img->getValue(row, col);
+}
+
 LabeledImage::LabeledImage(fs::path const& color, fs::path const& depth,
-                           fs::path const& labels)
-    : labels_{new LabelImageHandler(labels)}, Image(color, depth) {}
+                           fs::path const& labels, rf::Label label,
+                           rf::Label defaultLabel)
+    : labels_{new LabelImageHandler(labels)},
+      Image(color, depth),
+      label_{label},
+      bgLabel_{defaultLabel} {}
 LabeledImage::~LabeledImage() {}
 
 void LabeledImage::load() {
@@ -118,20 +157,26 @@ void LabeledImage::release() {
   labels_->release();
 }
 
-using LabelType = rf::StringLabelMap::LabelType;
+rf::Label LabeledImage::getLabelValue(int row, int col) const noexcept {
+  auto image = dynamic_cast<LabelImageHandler*>(labels_.get());
+  if (image->isLabeled(row, col)) {
+    return label_;
+  } else {
+    return bgLabel_;
+  }
+}
 
 std::vector<PixelReference> sampleLabeledPixels(LabeledImage const& image,
                                                 size_t n) {
-  const auto& pixels =
-      dynamic_cast<LabelImageHandler*>(image.labels_.get())->pixels;
-
   std::vector<PixelReference> samples;
   auto gen = std::mt19937(std::random_device{}());
-  auto dist = std::uniform_int_distribution<size_t>{0UL, pixels.size() - 1};
+  auto rowDist = std::uniform_int_distribution<int>{0, image.rows()};
+  auto colDist = std::uniform_int_distribution<int>{0, image.cols()};
 
   for (size_t i = 0; i < n; ++i) {
-    const auto pixel = pixels.begin() + dist(gen);
-    samples.emplace_back(PixelReference(image, pixel->first, pixel->second));
+    const auto row = rowDist(gen);
+    const auto col = colDist(gen);
+    samples.emplace_back(PixelReference(image, rowDist(gen), colDist(gen)));
   }
 
   return samples;

@@ -5,68 +5,104 @@
 
 using ImageIterator = ImagePool::ImageIterator;
 
+void ImagePool::append(std::vector<LabeledImage>&& images) {
+  pool_.insert(pool_.end(), std::make_move_iterator(images.begin()),
+               std::make_move_iterator(images.end()));
+}
+
 void ImagePool::shuffle() {
   std::random_device rd;
   std::mt19937 g(rd());
-
-  for (auto& entry : pool_) {
-    auto& images = entry.second;
-    std::shuffle(images.begin(), images.end(), g);
-  }
-}
-
-size_t ImagePool::size() const noexcept {
-  size_t count = 0;
-  for (auto const& cls : pool_) {
-    count += cls.second.size();
-  }
-  return count;
+  std::shuffle(pool_.begin(), pool_.end(), g);
 }
 
 size_t TrainingSet::size() const noexcept {
-  size_t count = 0;
-  for (auto const& range : classRanges_) {
-    const auto begin = std::get<1>(range);
-    const auto end = std::get<2>(range);
-    count += std::distance(begin, end);
-  }
-  return count;
+  return std::distance(begin_, end_);
 }
 
-std::vector<TrainingSet::TrainingExample> TrainingSet::sample() {
+std::vector<TrainingExample> TrainingSet::sample() {
   std::vector<TrainingExample> samples;
 
-  const size_t classCount = classRanges_.size();
-  for (const auto& range : classRanges_) {
-    const auto label = labels_.toLabel(std::get<0>(range));
-    const auto begin = std::get<1>(range);
-    const auto end = std::get<2>(range);
+  // Release the images
+  for (auto& img : loadedImages_) {
+    img.get().release();
+  }
 
-    // Release the images
-    for (auto& img : loadedImages_) {
-      img.get().release();
-    }
+  loadedImages_.clear();
+  std::sample(begin_, end_, std::back_inserter(loadedImages_), samplesPerClass_,
+              std::mt19937{std::random_device{}()});
 
-    loadedImages_.clear();
-    std::sample(begin, end, std::back_inserter(loadedImages_), samplesPerClass_,
-                std::mt19937{std::random_device{}()});
+  // load the images
+  for (auto& img : loadedImages_) {
+    img.get().load();
+  }
 
-    // load the images
-    for (auto& img : loadedImages_) {
-      img.get().load();
-    }
-
-    for (const auto& image : loadedImages_) {
-      auto pixels = sampleLabeledPixels(image, samplesPerImage_);
-      std::transform(pixels.begin(), pixels.end(), std::back_inserter(samples),
-                     [&label](const auto& pixelReference) {
-                       return std::make_pair(pixelReference, label);
-                     });
-    }
+  for (const auto& image : loadedImages_) {
+    auto pixels = sampleLabeledPixels(image, samplesPerImage_);
+    std::transform(pixels.begin(), pixels.end(), std::back_inserter(samples),
+                   [&](const auto& pixelReference) {
+                     const auto label = image.get().getLabelValue(
+                         pixelReference.row(), pixelReference.col());
+                     return std::make_pair(pixelReference, label);
+                   });
   }
 
   return samples;
 }
+
+class TrainSetIteratorImpl
+    : public rf::TrainSet<PixelReference>::TrainSetIterator {
+ public:
+  TrainSetIteratorImpl(TrainingSet const& set) noexcept
+      : set_{set}, it_{set.begin()} {}
+
+ public:  // rf::TrainSet::TrainSetIterator
+  void next() override {
+    if (it_ == set_.get().end()) {
+      return;
+    }
+
+    if (pixel_ == 0) {
+      it_->load();
+    }
+
+    int rows = it_->rows();
+    int cols = it_->cols();
+    size_t pixelCount = rows * cols;
+
+    if (pixel_ < pixelCount) {
+      pixel_++;
+    } else {
+      pixel_ = 0;
+      it_->release();
+      it_++;
+    }
+  }
+
+  std::optional<TrainingExample> value() override {
+    if (it_ == set_.get().end()) {
+      return std::nullopt;
+    }
+
+    it_->load();
+
+    int row = pixel_ / it_->rows();
+    int col = pixel_ % it_->cols();
+    return std::make_pair(PixelReference(*it_, row, col),
+                          it_->getLabelValue(row, col));
+  }
+
+ private:
+  size_t pixel_{0};
+  ImageIterator it_{};
+  std::reference_wrapper<const TrainingSet> set_;
+};
+
+std::unique_ptr<TrainingSet::TrainSetIterator> TrainingSet::iter() {
+  return std::make_unique<TrainSetIteratorImpl>(*this);
+}
+
+TrainingSet::~TrainingSet() {}
 
 std::tuple<TrainingSet, TrainingSet, TrainingSet> splitImagePool(
     ImagePool& imagePool, double validationSize, double testSize) {
@@ -79,30 +115,14 @@ std::tuple<TrainingSet, TrainingSet, TrainingSet> splitImagePool(
 
   double const trainSize = 1.0 - validationSize - testSize;
   auto& pool = imagePool.pool_;
+  size_t const imagePoolSize = pool.size();
 
-  TrainingSet::ImageRanges trainPairs{};
-  TrainingSet::ImageRanges validationPairs{};
-  TrainingSet::ImageRanges testPairs{};
+  // Number of training images to take
+  const auto trainIt = pool.begin();
+  const auto validIt =
+      pool.begin() + static_cast<size_t>(imagePoolSize * trainSize);
+  const auto testIt =
+      validIt + static_cast<size_t>(imagePoolSize * validationSize);
 
-  // take
-  for (auto& cls : pool) {
-    // images of this class
-    auto label = cls.first;
-    auto& images = cls.second;
-    size_t imagesCount = images.size();
-
-    // Number of training images to take
-    const size_t cut1 = static_cast<size_t>(imagesCount * trainSize);
-    const size_t cut2 =
-        cut1 + static_cast<size_t>(imagesCount * validationSize);
-
-    auto it = images.begin();
-
-    validationPairs.emplace_back(label, it, it + cut1);
-    validationPairs.emplace_back(label, it + cut1, it + cut2);
-    testPairs.emplace_back(label, it + cut2, images.end());
-  }
-
-  return std::make_tuple(trainPairs, std::move(validationPairs),
-                         std::move(testPairs));
+  return {{trainIt, validIt}, {validIt, testIt}, {testIt, pool.end()}};
 }

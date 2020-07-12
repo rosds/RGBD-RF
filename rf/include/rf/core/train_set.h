@@ -1,6 +1,14 @@
 #pragma once
+#include <rf/core/label.h>
+
+#include <memory>
+#include <optional>
+#include <vector>
 
 namespace rf {
+
+template <typename Data>
+using TrainingExample = std::pair<Data, Label>;
 
 /**
  *
@@ -9,12 +17,19 @@ namespace rf {
  *   examples from whatever pool of data is behind of this.
  *
  */
-template <typename InputData, typename LabelType>
+template <typename Data>
 class TrainSet {
  public:
-  using TrainingExample = std::pair<InputData, LabelType>;
-  virtual ~TrainSet() {}
-  virtual std::vector<TrainingExample> sample() = 0;
+  using TrainingExampleType = TrainingExample<Data>;
+
+  class TrainSetIterator {
+   public:
+    virtual void next() = 0;
+    virtual std::optional<TrainingExampleType> value() = 0;
+  };
+
+  virtual std::vector<TrainingExampleType> sample() = 0;
+  virtual std::unique_ptr<TrainSetIterator> iter() = 0;
 };
 
 }  // namespace rf
