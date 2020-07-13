@@ -6,6 +6,7 @@
 #include <rf/core/train_set.h>
 
 #include <algorithm>
+#include <cassert>
 #include <cmath>
 #include <memory>
 #include <unordered_map>
@@ -56,21 +57,15 @@ template <typename InputIterator>
 Distribution computeDistribution(InputIterator begin, InputIterator end) {
   Distribution distribution{};
 
-  const auto n = static_cast<double>(std::distance(begin, end));
-  if (n <= 0.0) {
-    return distribution;
-  }
-
+  double total = 0.0;
   for (auto it = begin; it != end; ++it) {
     auto const& label = it->second;
-    auto entry = distribution.emplace(label, 1.0);
-    if (entry.second == false) {
-      entry.first->second += 1.0;
-    }
+    distribution[label] += 1.0;
+    total += 1.0;
   }
 
   for (auto& cls : distribution) {
-    cls.second /= n;
+    cls.second /= total;
   }
 
   return distribution;
@@ -109,6 +104,7 @@ double entropy(Dist const& d) {
   double entropy = 0.0;
   for (auto const& entry : d) {
     auto p = entry.second;
+    assert(p >= 0.0 && p <= 1.0);
     entropy += -p * std::log(p);
   }
   return entropy;
@@ -120,34 +116,35 @@ double evaluateSplitCandidate(SplitCandidate const& candidate,
   const auto entireSet = computeDistribution(begin, end);
   const auto totalEntropy = entropy(entireSet);
 
-  Distribution leftSet;
-  Distribution rightSet;
+  Distribution leftSet{};
+  Distribution rightSet{};
+  double leftTotal = 0.0;
+  double rightTotal = 0.0;
+  double entireTotal = 0.0;
 
   for (auto it = begin; it != end; ++it) {
     if (candidate.classify(it->first) == SplitResult::LEFT) {
-      auto entry = leftSet.emplace(it->second, 1.0);
-      if (entry.second != true) {
-        entry.first->second += 1.0;
-      }
+      leftSet[it->second] += 1.0;
+      leftTotal += 1.0;
     } else {
-      auto entry = rightSet.emplace(it->second, 1.0);
-      if (entry.second != true) {
-        entry.first->second += 1.0;
-      }
+      rightSet[it->second] += 1.0;
+      rightTotal += 1.0;
     }
+    entireTotal += 1.0;
   }
 
   for (auto& cls : leftSet) {
-    cls.second /= static_cast<double>(leftSet.size());
+    cls.second /= leftTotal;
   }
 
   for (auto& cls : rightSet) {
-    cls.second /= static_cast<double>(rightSet.size());
+    cls.second /= rightTotal;
   }
 
   // Information gain
   const double informationGain =
-      totalEntropy - entropy(leftSet) - entropy(rightSet);
+      totalEntropy - ((leftTotal / entireTotal) * entropy(leftSet) +
+                      (rightTotal / entireTotal) * entropy(rightSet));
 
   return informationGain;
 }
@@ -163,8 +160,10 @@ std::pair<SplitCandidate, double> getBestCandidate(InputIterator begin,
     auto score = evaluateSplitCandidate(candidate, begin, end);
     if (score > maxScore) {
       bestCandidate = candidate;
+      maxScore = score;
     }
   }
+
   return {bestCandidate, maxScore};
 }
 
@@ -172,8 +171,8 @@ template <typename SplitCandidate, typename InputIterator,
           typename TrainingExample = typename InputIterator::value_type,
           typename Data = typename TrainingExample::first_type>
 NodePtr<Data> trainNode(InputIterator begin, InputIterator end,
-                        TreeParameters conf, size_t currentDepth) {
-  // stop criteria
+                        TreeParameters conf,
+                        size_t currentDepth) {  // stop criteria
   if (currentDepth > conf.maxDepth ||
       std::distance(begin, end) < conf.minSamplesPerNode) {
     return std::make_unique<LeafNode<Data>>(begin, end);
@@ -220,7 +219,7 @@ double evaluateTree(Tree<Data> const& tree, rf::TrainSet<Data>& test) {
   auto iter = test.iter();
 
   auto maxProb = [](auto const& p, auto const& g) {
-    return p.second > g.second;
+    return p.second < g.second;
   };
 
   while (true) {

@@ -3,6 +3,9 @@
 #include <cassert>
 #include <filesystem>
 #include <iostream>
+#include <opencv4/opencv2/highgui.hpp>
+#include <opencv4/opencv2/imgcodecs.hpp>
+#include <opencv4/opencv2/imgproc.hpp>
 #include <vector>
 
 #include "image_pool.h"
@@ -114,18 +117,60 @@ int main(int argc, char* argv[]) {
   std::cout << "Test images:       " << test.size() << '\n';
 
   // Each iteration of the algorithm it will sample 20 x 50 pixels
-  train.setSamplesPerClass(20);
-  train.setSamplesPerImage(50);
+  train.setSamplesPerClass(1000);
+  train.setSamplesPerImage(80);
 
   rf::TreeParameters stoppingCriteria;
   stoppingCriteria.minSamplesPerNode = 20;
-  stoppingCriteria.maxDepth = 30;
+  stoppingCriteria.maxDepth = 10;
   stoppingCriteria.candidatesToGeneratePerNode = 1000;
   auto tree =
       rf::trainTree<PixelClassifier>(train, validation, stoppingCriteria);
 
+  cv::namedWindow("classified");
+
+  /**
+   *
+   * uncomment this to display the classified images
+   *
+   */
+  std::vector<cv::Vec3b> colors = {cv::Vec3b{0, 0, 0}, cv::Vec3b{0, 0, 250},
+                                   cv::Vec3b{0, 250, 0}};
+  for (auto& img : test) {
+    img.load();
+
+    // load the rgb image with opencv
+    auto pic = cv::imread(img.getColorPath().string(),
+                          cv::IMREAD_ANYDEPTH | cv::IMREAD_ANYCOLOR);
+
+    cv::cvtColor(pic, pic, cv::COLOR_RGB2GRAY);
+    cv::cvtColor(pic, pic, cv::COLOR_GRAY2RGB);
+
+    for (int row = 0; row < img.rows(); ++row) {
+      for (int col = 0; col < img.cols(); ++col) {
+        auto pixel = img.ref(row, col);
+        auto dist = tree.classify(pixel);
+
+        auto label = std::max_element(dist.begin(), dist.end(),
+                                      [](auto const& a, auto const& b) {
+                                        return a.second < b.second;
+                                      })
+                         ->first;
+
+        if (label != 0) {
+          pic.at<cv::Vec3b>(row, col) = colors[label];
+        }
+      }
+    }
+
+    cv::imshow("classified", pic);
+    cv::waitKey(0);
+
+    img.release();
+  }
+
   // Classification rate
-  std::cout << "\nTest classification rate: " << rf::evaluateTree(tree, train)
+  std::cout << "\nTest classification rate: " << rf::evaluateTree(tree, test)
             << '\n';
 
   return 0;

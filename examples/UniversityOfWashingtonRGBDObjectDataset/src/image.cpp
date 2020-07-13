@@ -5,6 +5,10 @@
 #include <opencv4/opencv2/imgcodecs.hpp>
 #include <random>
 
+PixelReference Image::ref(int row, int col) const noexcept {
+  return PixelReference(*this, row, col);
+}
+
 class ColorImageHandler : public ImageHandler {
  public:
   ColorImageHandler(fs::path const& path) noexcept : ImageHandler(path) {}
@@ -79,8 +83,7 @@ class LabelImageHandler : public ImageHandler {
 
   bool isLabeled(int row, int col) const noexcept {
     if (loaded_ && row >= 0 && row < img_.rows && col >= 0 && col < img_.cols) {
-      const auto& pixel = img_.at<cv::Vec3b>(row, col);
-      return cv::norm(pixel) > 0.0;
+      return img_.at<uint8_t>(row, col) > 0;
     }
 
     return false;
@@ -107,8 +110,8 @@ class LabelImageHandler : public ImageHandler {
     }
   }
 
-  int rows() const noexcept { return img_.rows; }
-  int cols() const noexcept { return img_.cols; }
+  int rows() const noexcept override { return img_.rows; }
+  int cols() const noexcept override { return img_.cols; }
 
  private:
   bool loaded_{false};

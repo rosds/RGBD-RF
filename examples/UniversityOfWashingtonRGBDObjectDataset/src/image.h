@@ -19,9 +19,13 @@ class ImageHandler {
   virtual int rows() const noexcept = 0;
   virtual int cols() const noexcept = 0;
 
+  [[nodiscard]] fs::path path() const noexcept { return path_; }
+
  protected:
   fs::path path_{};
 };
+
+class PixelReference;
 
 /**
  *
@@ -45,6 +49,11 @@ class Image {
   int cols() const noexcept;
 
   [[nodiscard]] double getDepthValue(int row, int col) const noexcept;
+  [[nodiscard]] fs::path getColorPath() const noexcept {
+    return color_->path();
+  }
+
+  [[nodiscard]] PixelReference ref(int row, int col) const noexcept;
 
  protected:
   std::unique_ptr<ImageHandler> color_{nullptr};

@@ -12,7 +12,6 @@ class PixelClassifier
     : public rf::SplitCandidate<PixelClassifier, PixelReference> {
  public:
   rf::SplitResult classify(PixelReference const& p) const noexcept {
-    // TODO to implement
     using PixelCoord = std::pair<int, int>;
     PixelCoord center = std::make_pair(p.row(), p.col());
     PixelCoord offset1 =
@@ -41,7 +40,7 @@ class PixelClassifier
     // here we choose a standard deviations of just half of that
     // this can be better thought
     std::normal_distribution<double> offsetDist{0, 40};
-    std::normal_distribution<double> threshDist{1.0, 0.25};
+    std::normal_distribution<double> threshDist{0.5, 0.25};
 
     auto offset1 = std::make_pair(std::round(offsetDist(gen)),
                                   std::round(offsetDist(gen)));
