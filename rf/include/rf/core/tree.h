@@ -15,6 +15,22 @@ namespace rf {
 
 using Distribution = std::unordered_map<Label, double>;
 
+Distribution combine(Distribution const& a, Distribution const& b) {
+  auto result = a;
+  for (const auto& p : b) {
+    result[p.first] += p.second;
+  }
+
+  double sum = 0.0;
+  std::for_each(result.begin(), result.end(),
+                [&sum](auto const& p) { sum += p.second; });
+
+  std::for_each(result.begin(), result.end(),
+                [&sum](auto& p) { p.second /= sum; });
+
+  return result;
+}
+
 template <typename Data>
 class TreeNode {
  public:
@@ -212,8 +228,8 @@ Tree<InputData> trainTree(TrainSet<InputData>& train,
       samples.begin(), samples.end(), stoppingCriteria, 0));
 }
 
-template <typename Data>
-double evaluateTree(Tree<Data> const& tree, rf::TrainSet<Data>& test) {
+template <typename Classifier, typename Data>
+double evaluateTree(Classifier const& tree, rf::TrainSet<Data>& test) {
   double error = 0.0;
   double count = 0.0;
   auto iter = test.iter();

@@ -1,4 +1,4 @@
-#include <rf/core/tree.h>
+#include <rf/core/random_forest.h>
 
 #include <cassert>
 #include <filesystem>
@@ -117,15 +117,16 @@ int main(int argc, char* argv[]) {
   std::cout << "Test images:       " << test.size() << '\n';
 
   // Each iteration of the algorithm it will sample 20 x 50 pixels
-  train.setSamplesPerClass(1000);
+  train.setSamplesPerClass(500);
   train.setSamplesPerImage(80);
 
-  rf::TreeParameters stoppingCriteria;
-  stoppingCriteria.minSamplesPerNode = 20;
-  stoppingCriteria.maxDepth = 10;
-  stoppingCriteria.candidatesToGeneratePerNode = 1000;
-  auto tree =
-      rf::trainTree<PixelClassifier>(train, validation, stoppingCriteria);
+  rf::TreeParameters params;
+  params.numberOfTrees = 10;
+  params.minSamplesPerNode = 20;
+  params.maxDepth = 5;
+  params.candidatesToGeneratePerNode = 1000;
+  rf::RandomForest<PixelReference, PixelClassifier> forest{};
+  forest.train(train, validation, params);
 
   cv::namedWindow("classified");
 
@@ -134,8 +135,8 @@ int main(int argc, char* argv[]) {
    * uncomment this to display the classified images
    *
    */
-  std::vector<cv::Vec3b> colors = {cv::Vec3b{0, 0, 0}, cv::Vec3b{0, 0, 250},
-                                   cv::Vec3b{0, 250, 0}};
+  std::vector<cv::Vec3b> colors = {cv::Vec3b{0, 0, 0}, cv::Vec3b{0, 0, 255},
+                                   cv::Vec3b{0, 255, 255}};
   for (auto& img : test) {
     img.load();
 
@@ -149,7 +150,7 @@ int main(int argc, char* argv[]) {
     for (int row = 0; row < img.rows(); ++row) {
       for (int col = 0; col < img.cols(); ++col) {
         auto pixel = img.ref(row, col);
-        auto dist = tree.classify(pixel);
+        auto dist = forest.classify(pixel);
 
         auto label = std::max_element(dist.begin(), dist.end(),
                                       [](auto const& a, auto const& b) {
@@ -170,7 +171,7 @@ int main(int argc, char* argv[]) {
   }
 
   // Classification rate
-  std::cout << "\nTest classification rate: " << rf::evaluateTree(tree, test)
+  std::cout << "\nTest classification rate: " << rf::evaluateTree(forest, test)
             << '\n';
 
   return 0;
