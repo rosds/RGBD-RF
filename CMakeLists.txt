@@ -3,9 +3,8 @@ project(RGBD-RF LANGUAGES CXX)
 
 include(CTest)
 add_subdirectory(third_party)
-find_package(OpenCV REQUIRED COMPONENTS opencv_core opencv_imgcodecs
-  opencv_highgui)
 
-add_subdirectory(rf)
-add_subdirectory(ds)
+add_library(rf INTERFACE)
+target_include_directories(rf INTERFACE include/)
+
 add_subdirectory(examples)

@@ -1,9 +1,9 @@
 #pragma once
 
-#include <rf/core/label.h>
-#include <rf/core/parameters.h>
-#include <rf/core/split_candidate.h>
-#include <rf/core/train_set.h>
+#include <rf/label.h>
+#include <rf/parameters.h>
+#include <rf/split_candidate.h>
+#include <rf/train_set.h>
 
 #include <algorithm>
 #include <cassert>

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <rf/core/split_candidate.h>
+#include <rf/split_candidate.h>
 
 #include <random>
 

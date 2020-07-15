@@ -1,6 +1,6 @@
 #pragma once
 
-#include <rf/core/label.h>
+#include <rf/label.h>
 
 #include <filesystem>
 #include <memory>

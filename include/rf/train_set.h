@@ -1,5 +1,5 @@
 #pragma once
-#include <rf/core/label.h>
+#include <rf/label.h>
 
 #include <memory>
 #include <optional>

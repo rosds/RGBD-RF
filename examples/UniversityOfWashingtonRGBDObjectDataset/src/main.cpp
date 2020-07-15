@@ -1,4 +1,4 @@
-#include <rf/core/random_forest.h>
+#include <rf/random_forest.h>
 
 #include <cassert>
 #include <filesystem>
@@ -82,9 +82,9 @@ int main(int argc, char* argv[]) {
 
   auto node = YAML::LoadFile(argv[1]);
 
-  const auto color_suffix = node["color_suffix"].as<std::string>();
-  const auto depth_suffix = node["depth_suffix"].as<std::string>();
-  const auto label_suffix = node["label_suffix"].as<std::string>();
+  constexpr auto color_suffix = "_crop.png";
+  constexpr auto depth_suffix = "_depthcrop.png";
+  constexpr auto label_suffix = "_maskcrop.png";
 
   // Map from strings to rf::Label
   auto& labelRegistry = rf::LabelRegistry<std::string>::instance();
@@ -137,7 +137,11 @@ int main(int argc, char* argv[]) {
    */
   std::vector<cv::Vec3b> colors = {cv::Vec3b{0, 0, 0}, cv::Vec3b{0, 0, 255},
                                    cv::Vec3b{0, 255, 255}};
-  for (auto& img : test) {
+
+  size_t idx = 0;
+  // for (auto& img : test) {
+  for (auto it = test.begin(); it != test.end() && idx < 20; ++it, ++idx) {
+    auto& img = *it;
     img.load();
 
     // load the rgb image with opencv
@@ -171,7 +175,7 @@ int main(int argc, char* argv[]) {
   }
 
   // Classification rate
-  std::cout << "\nTest classification rate: " << rf::evaluateTree(forest, test)
+  std::cout << "\nTest classification error: " << rf::evaluateTree(forest, test)
             << '\n';
 
   return 0;

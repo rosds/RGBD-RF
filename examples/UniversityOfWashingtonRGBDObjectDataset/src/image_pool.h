@@ -1,7 +1,7 @@
 #pragma once
 
-#include <rf/core/label.h>
-#include <rf/core/train_set.h>
+#include <rf/label.h>
+#include <rf/train_set.h>
 
 #include <unordered_map>
 #include <vector>
