@@ -6,6 +6,10 @@
 #include <vector>
 
 namespace rf {
+
+/**
+ *  If you have more than 256 labels then you might want to change this
+ */
 using Label = uint8_t;
 
 /**

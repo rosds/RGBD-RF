@@ -10,13 +10,13 @@ enum class SplitResult : uint8_t {
 template <typename Derived, typename Data>
 class SplitCandidate {
  public:
+  using Input = Data;
+
   [[nodiscard]] SplitResult classify(Data const& d) const noexcept {
-    return Derived::classify(d);
+    return static_cast<Derived const&>(*this)(d);
   }
 
   static SplitCandidate generate() { return Derived::generate(); }
 };
-
-class SplitCandidateGenerator {};
 
 }  // namespace rf

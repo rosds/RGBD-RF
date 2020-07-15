@@ -1,6 +1,7 @@
 #pragma once
 
 #include <rf/label.h>
+#include <rf/label_distribution.h>
 #include <rf/parameters.h>
 #include <rf/split_candidate.h>
 #include <rf/train_set.h>
@@ -13,28 +14,10 @@
 
 namespace rf {
 
-using Distribution = std::unordered_map<Label, double>;
-
-Distribution combine(Distribution const& a, Distribution const& b) {
-  auto result = a;
-  for (const auto& p : b) {
-    result[p.first] += p.second;
-  }
-
-  double sum = 0.0;
-  std::for_each(result.begin(), result.end(),
-                [&sum](auto const& p) { sum += p.second; });
-
-  std::for_each(result.begin(), result.end(),
-                [&sum](auto& p) { p.second /= sum; });
-
-  return result;
-}
-
 template <typename Data>
 class TreeNode {
  public:
-  virtual Distribution classify(Data const&) const noexcept = 0;
+  virtual LabelDistribution classify(Data const&) const noexcept = 0;
 };
 
 template <typename Data>
@@ -45,7 +28,7 @@ class SplitNode : public TreeNode<Data> {
  public:
   using Ptr = NodePtr<Data>;
 
-  Distribution classify(Data const& data) const noexcept override {
+  LabelDistribution classify(Data const& data) const noexcept override {
     if (split_.classify(data) == SplitResult::LEFT) {
       return left_->classify(data);
     } else {
@@ -66,46 +49,25 @@ class SplitNode : public TreeNode<Data> {
   Ptr right_{nullptr};
 };
 
-/**
- *  Compute the label distribution
- */
-template <typename InputIterator>
-Distribution computeDistribution(InputIterator begin, InputIterator end) {
-  Distribution distribution{};
-
-  double total = 0.0;
-  for (auto it = begin; it != end; ++it) {
-    auto const& label = it->second;
-    distribution[label] += 1.0;
-    total += 1.0;
-  }
-
-  for (auto& cls : distribution) {
-    cls.second /= total;
-  }
-
-  return distribution;
-}
-
 template <typename Data>
 class LeafNode : public TreeNode<Data> {
  public:
-  Distribution classify(Data const& data) const noexcept override {
+  LabelDistribution classify(Data const& data) const noexcept override {
     return distribution_;
   }
 
   template <typename InputIterator>
   LeafNode(InputIterator begin, InputIterator end)
-      : distribution_{computeDistribution(begin, end)} {}
+      : distribution_{begin, end} {}
 
  private:
-  Distribution distribution_{};
+  LabelDistribution distribution_{};
 };
 
 template <typename Data>
 class Tree {
  public:
-  Distribution classify(Data const& data) const noexcept {
+  LabelDistribution classify(Data const& data) const noexcept {
     return root_->classify(data);
   }
 
@@ -129,33 +91,18 @@ double entropy(Dist const& d) {
 template <typename SplitCandidate, typename InputIterator>
 double evaluateSplitCandidate(SplitCandidate const& candidate,
                               InputIterator begin, InputIterator end) {
-  const auto entireSet = computeDistribution(begin, end);
+  const auto entireSet = LabelDistribution{begin, end};
   const auto totalEntropy = entropy(entireSet);
 
-  Distribution leftSet{};
-  Distribution rightSet{};
-  double leftTotal = 0.0;
-  double rightTotal = 0.0;
-  double entireTotal = 0.0;
+  auto split = std::partition(begin, end, [&candidate](const auto& example) {
+    return candidate.classify(example.first) == SplitResult::LEFT;
+  });
 
-  for (auto it = begin; it != end; ++it) {
-    if (candidate.classify(it->first) == SplitResult::LEFT) {
-      leftSet[it->second] += 1.0;
-      leftTotal += 1.0;
-    } else {
-      rightSet[it->second] += 1.0;
-      rightTotal += 1.0;
-    }
-    entireTotal += 1.0;
-  }
-
-  for (auto& cls : leftSet) {
-    cls.second /= leftTotal;
-  }
-
-  for (auto& cls : rightSet) {
-    cls.second /= rightTotal;
-  }
+  auto leftSet = LabelDistribution{begin, split};
+  auto rightSet = LabelDistribution{split, end};
+  auto leftTotal = static_cast<double>(std::distance(begin, split));
+  auto rightTotal = static_cast<double>(std::distance(split, end));
+  auto entireTotal = static_cast<double>(std::distance(begin, end));
 
   // Information gain
   const double informationGain =
@@ -261,3 +208,5 @@ double evaluateTree(Classifier const& tree, rf::TrainSet<Data>& test) {
 }
 
 }  // namespace rf
+
+#include "impl/tree.hpp"

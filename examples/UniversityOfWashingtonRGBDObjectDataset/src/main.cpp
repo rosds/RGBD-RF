@@ -115,7 +115,7 @@ int main(int argc, char* argv[]) {
   params.minSamplesPerNode = 20;
   params.maxDepth = 5;
   params.candidatesToGeneratePerNode = 1000;
-  rf::RandomForest<PixelReference, PixelClassifier> forest{};
+  rf::RandomForest<PixelClassifier> forest{};
   forest.train(train, validation, params);
 
   cv::namedWindow("classified");

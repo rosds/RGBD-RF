@@ -4,8 +4,10 @@
 
 namespace rf {
 
-template <typename Data, typename SplitCandidate>
+template <typename SplitCandidate>
 class RandomForest {
+  using Data = typename SplitCandidate::Input;
+
  public:
   RandomForest() = default;
 
@@ -18,10 +20,10 @@ class RandomForest {
     }
   }
 
-  [[nodiscard]] Distribution classify(Data const& d) const noexcept {
-    Distribution dist{};
+  [[nodiscard]] LabelDistribution classify(Data const& d) const noexcept {
+    LabelDistribution dist{};
     for (const auto& tree : forest_) {
-      dist = combine(dist, tree.classify(d));
+      dist.combine(tree.classify(d));
     }
     return dist;
   }
