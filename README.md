@@ -1,32 +1,16 @@
 RGBD-RF
 =======
 
-Implementation of a Randomized Decision Forest for pose detection in depth
-images from the Kinect sensor.
+This is a very basic *header-only* Random Forest library implementation.
+
+To be able to use the library it is necessary to provide 4 things:
+
+- Provide an implementation of a `rf::SplitCandidate`
+- Something callable that generates an instance of a `rf::SplitCandidate`
+- Wrap your data with a `rf::TrainSet`
+- Provide the parameters for the training
 
 
-To build this project you need to have installed:
+## examples
 
-* cmake
-* OpenMPI
-
-Compile the library
--------------------
-
-To compile the library simply execute the next lines in the project
-directory:
-
-    mkdir build
-    cd build
-    cmake ..
-    make
-
-Documentation
--------------
-
-To build the documentation you need to have Doxygen installed. The you
-just need to execute this:
-
-    make doc
-
-in the build directory.
+- UniversityOfWashingtonRGBDObjectDataset: Using a Random Forest for RGB-D images classification.
