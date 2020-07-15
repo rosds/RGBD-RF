@@ -2,8 +2,7 @@ find_package(OpenCV REQUIRED COMPONENTS opencv_core opencv_imgcodecs
   opencv_highgui)
 
 add_executable(example src/image.cpp src/image_pool.cpp src/main.cpp )
-target_link_libraries(example yaml-cpp opencv_core opencv_imgcodecs
-  opencv_highgui rf)
+target_link_libraries(example opencv_core opencv_imgcodecs opencv_highgui rf)
 
 set_target_properties(example 
   PROPERTIES 

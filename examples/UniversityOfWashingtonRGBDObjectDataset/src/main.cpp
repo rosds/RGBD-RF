@@ -10,7 +10,6 @@
 
 #include "image_pool.h"
 #include "pixel_classifier.h"
-#include "yaml-cpp/yaml.h"
 
 namespace fs = std::filesystem;
 
@@ -57,36 +56,29 @@ std::vector<LabeledImage> findImages(fs::path const& directory, rf::Label label,
   return images;
 }
 
-/***
- *  The YAML configuration file for this example should specify
- *
- *
- *  Example configuration:
- *
- *  images:
- *    color_suffix: _crop.png
- *    depth_suffix: _depthcrop.png
- *    label_suffix: _maskcrop.png
- *
- *  classes:
- *    apple: /path/to/apple/images
- *    banana: /path/to/banana/images
- *
- *
- */
 int main(int argc, char* argv[]) {
-  if (argc < 2) {
-    std::cerr << "Usage: " << argv[0] << " configuration.yaml\n";
-    return 1;
-  }
+  /**
+   *  For this example we will only train on apples and bananas
+   */
+  auto imageFolders = std::vector<std::pair<std::string, fs::path>>{
+      {"apple", "../dataset/rgbd-dataset/apple"},
+      {"banana", "../dataset/rgbd-dataset/banana"},
+  };
 
-  auto node = YAML::LoadFile(argv[1]);
-
+  /**
+   *  In this dataset there are 3 images per take on an object:
+   *
+   *  - The RGB picture in a 3-channel unsigned 8-bit image
+   *  - The Depth information in a 1-channel 32 float point image
+   *  - The mask information in a 1-channel unsigned 8-bit image
+   *
+   *  these are the suffixes for each object picture:
+   */
   constexpr auto color_suffix = "_crop.png";
   constexpr auto depth_suffix = "_depthcrop.png";
   constexpr auto label_suffix = "_maskcrop.png";
 
-  // Map from strings to rf::Label
+  // Register the "background" label
   auto& labelRegistry = rf::LabelRegistry<std::string>::instance();
   const auto bgLabel =
       rf::LabelRegistry<std::string>::instance().getLabel("background");
@@ -95,10 +87,8 @@ int main(int argc, char* argv[]) {
   ImagePool pool{};
 
   // gather the images for each class
-  const auto& classes = node["classes"];
-  for (auto it = classes.begin(); it != classes.end(); ++it) {
-    const auto label = it->first.as<std::string>();
-    const auto directory = fs::path{it->second.as<std::string>()};
+  for (auto const& entry : imageFolders) {
+    auto const& [label, directory] = entry;
     auto images = findImages(directory, labelRegistry.getLabel(label), bgLabel,
                              color_suffix, depth_suffix, label_suffix);
 
@@ -130,16 +120,14 @@ int main(int argc, char* argv[]) {
 
   cv::namedWindow("classified");
 
-  /**
-   *
-   * uncomment this to display the classified images
-   *
-   */
-  std::vector<cv::Vec3b> colors = {cv::Vec3b{0, 0, 0}, cv::Vec3b{0, 0, 255},
-                                   cv::Vec3b{0, 255, 255}};
+  std::vector<cv::Vec3b> colors = {
+      cv::Vec3b{0, 0, 0},      // this one is for the background but is not used
+      cv::Vec3b{0, 0, 255},    // color apples red
+      cv::Vec3b{0, 255, 255},  // color bananas yellow
+  };
 
   size_t idx = 0;
-  // for (auto& img : test) {
+  // Show 20 classified images from the test set
   for (auto it = test.begin(); it != test.end() && idx < 20; ++it, ++idx) {
     auto& img = *it;
     img.load();
