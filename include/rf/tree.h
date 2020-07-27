@@ -7,8 +7,6 @@
 #include <rf/train_set.h>
 
 #include <algorithm>
-#include <cassert>
-#include <cmath>
 #include <memory>
 #include <unordered_map>
 
@@ -77,22 +75,11 @@ class Tree {
   NodePtr<Data> root_{nullptr};
 };
 
-template <typename Dist>
-double entropy(Dist const& d) {
-  double entropy = 0.0;
-  for (auto const& entry : d) {
-    auto p = entry.second;
-    assert(p >= 0.0 && p <= 1.0);
-    entropy += -p * std::log(p);
-  }
-  return entropy;
-}
-
 template <typename SplitCandidate, typename InputIterator>
 double evaluateSplitCandidate(SplitCandidate const& candidate,
                               InputIterator begin, InputIterator end) {
   const auto entireSet = LabelDistribution{begin, end};
-  const auto totalEntropy = entropy(entireSet);
+  const auto totalEntropy = entireSet.entropy();
 
   auto split = std::partition(begin, end, [&candidate](const auto& example) {
     return candidate.classify(example.first) == SplitResult::LEFT;
@@ -106,16 +93,15 @@ double evaluateSplitCandidate(SplitCandidate const& candidate,
 
   // Information gain
   const double informationGain =
-      totalEntropy - ((leftTotal / entireTotal) * entropy(leftSet) +
-                      (rightTotal / entireTotal) * entropy(rightSet));
+      totalEntropy - ((leftTotal / entireTotal) * leftSet.entropy() +
+                      (rightTotal / entireTotal) * rightSet.entropy());
 
   return informationGain;
 }
 
 template <typename SplitCandidate, typename InputIterator>
-std::pair<SplitCandidate, double> getBestCandidate(InputIterator begin,
-                                                   InputIterator end,
-                                                   size_t n) {
+SplitCandidate getBestCandidate(InputIterator begin, InputIterator end,
+                                size_t n) {
   double maxScore = 0.0;
   SplitCandidate bestCandidate{};
   for (size_t i = 0; i < n; ++i) {
@@ -127,7 +113,7 @@ std::pair<SplitCandidate, double> getBestCandidate(InputIterator begin,
     }
   }
 
-  return {bestCandidate, maxScore};
+  return bestCandidate;
 }
 
 template <typename SplitCandidate, typename InputIterator,
@@ -142,7 +128,7 @@ NodePtr<Data> trainNode(InputIterator begin, InputIterator end,
   }
 
   // Generate a split node
-  auto [candidate, score] = getBestCandidate<SplitCandidate>(
+  auto candidate = getBestCandidate<SplitCandidate>(
       begin, end, conf.candidatesToGeneratePerNode);
 
   // reorder the samples according to the split candidate

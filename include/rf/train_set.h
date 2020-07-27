@@ -26,6 +26,7 @@ class TrainSet {
    public:
     virtual void next() = 0;
     virtual std::optional<TrainingExampleType> value() = 0;
+    virtual ~TrainSetIterator() {}
   };
 
   virtual std::vector<TrainingExampleType> sample() = 0;

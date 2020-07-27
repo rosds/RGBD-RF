@@ -13,4 +13,4 @@ To be able to use the library it is necessary to provide 4 things:
 
 ## examples
 
-- [UniversityOfWashingtonRGBDObjectDataset](examples/UniversityOfWashingtonRGBDObjectDataset/README.md): Using a Random Forest for RGB-D images classification.
+- [UniversityOfWashingtonRGBDObjectDataset](examples/UniversityOfWashingtonRGBDObjectDataset): Using a Random Forest for RGB-D images classification.

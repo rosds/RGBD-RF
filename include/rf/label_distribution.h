@@ -30,6 +30,11 @@ class LabelDistribution {
    */
   LabelDistribution& combine(LabelDistribution const& other);
 
+  /**
+   *  Compute and return the entropy level for the distribution.
+   */
+  [[nodiscard]] double entropy() const noexcept;
+
  private:
   std::unordered_map<Label, double> dist_{};
 };
