@@ -38,9 +38,10 @@ class PixelReference;
 class Image {
  public:
   Image(fs::path const& color, fs::path const& depth);
-  ~Image();
   Image(Image&&) = default;
   Image& operator=(Image&&) = default;
+
+  ~Image();
 
   virtual void load();
   virtual void release();
