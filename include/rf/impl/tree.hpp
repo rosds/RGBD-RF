@@ -1,5 +1,8 @@
 #include <rf/tree.h>
 
+#include <algorithm>
+#include <future>
+
 namespace rf {
 namespace impl {
 
@@ -12,6 +15,11 @@ double evaluateSplitCandidate(SplitCandidate const& candidate,
   auto split = std::partition(begin, end, [&candidate](const auto& example) {
     return candidate.classify(example.first) == SplitResult::LEFT;
   });
+
+  // there is no gain
+  if (split == begin || split == end) {
+    return 0.0;
+  }
 
   auto leftSet = LabelDistribution{begin, split};
   auto rightSet = LabelDistribution{split, end};
@@ -28,8 +36,7 @@ double evaluateSplitCandidate(SplitCandidate const& candidate,
 }
 
 template <typename SplitCandidate, typename InputIterator>
-SplitCandidate getBestCandidate(InputIterator begin, InputIterator end,
-                                size_t n) {
+SplitCandidate findCandidate(InputIterator begin, InputIterator end, size_t n) {
   double maxScore = 0.0;
   SplitCandidate bestCandidate{};
   for (size_t i = 0; i < n; ++i) {
@@ -45,8 +52,7 @@ SplitCandidate getBestCandidate(InputIterator begin, InputIterator end,
 }
 
 template <typename SplitCandidate, typename InputIterator>
-SplitCandidate getBestCandidate(InputIterator begin, InputIterator end,
-                                size_t n);
+SplitCandidate findCandidate(InputIterator begin, InputIterator end, size_t n);
 
 template <typename SplitCandidate, typename InputIterator,
           typename TrainingExample = typename InputIterator::value_type,
@@ -60,7 +66,7 @@ NodePtr<Data> trainNode(InputIterator begin, InputIterator end,
   }
 
   // Generate a split node
-  auto candidate = getBestCandidate<SplitCandidate>(
+  auto candidate = findCandidate<SplitCandidate>(
       begin, end, conf.candidatesToGeneratePerNode);
 
   // reorder the samples according to the split candidate
@@ -72,13 +78,19 @@ NodePtr<Data> trainNode(InputIterator begin, InputIterator end,
     return std::make_unique<LeafNode<Data>>(begin, end);
   }
 
+  // Build the children asynchronously
+  // this might not be a good idea
+  auto trainChild = [conf, currentDepth](auto begin, auto end) {
+    return trainNode<SplitCandidate>(begin, end, conf, currentDepth + 1);
+  };
+  auto leftChild = std::async(std::launch::async, trainChild, begin, mid);
+  auto rightChild = std::async(std::launch::async, trainChild, mid, end);
+
   // Create the splitnode and continue training the children
   auto splitNode =
       std::make_unique<SplitNode<Data, SplitCandidate>>(std::move(candidate));
-  splitNode->setLeftChild(
-      trainNode<SplitCandidate>(begin, mid, conf, currentDepth + 1));
-  splitNode->setRightChild(
-      trainNode<SplitCandidate>(mid, end, conf, currentDepth + 1));
+  splitNode->setLeftChild(leftChild.get());
+  splitNode->setRightChild(rightChild.get());
 
   return splitNode;
 }
@@ -91,7 +103,39 @@ Tree<InputData> trainTree(TrainSet<InputData>& train,
                           TreeParameters stoppingCriteria) {
   auto samples = train.sample();
   // stop building tree
-  return Tree<InputData>(impl::trainNode<SplitCandidate>(
-      samples.begin(), samples.end(), stoppingCriteria, 0));
+  return impl::trainNode<SplitCandidate>(samples.begin(), samples.end(),
+                                         stoppingCriteria, 0);
+}
+
+template <typename Classifier, typename Data>
+double evaluateTree(Classifier const& tree, rf::TrainSet<Data>& test) {
+  double error = 0.0;
+  double count = 0.0;
+  auto iter = test.iter();
+
+  auto maxProb = [](auto const& p, auto const& g) {
+    return p.second < g.second;
+  };
+
+  while (true) {
+    auto value = iter->value();
+    if (!value.has_value()) {
+      break;
+    }
+
+    auto const& trainExample = value.value();
+    auto const dist = tree.classify(trainExample.first);
+
+    const auto maxElement = dist.maxProb();
+    if (maxElement.first != trainExample.second) {
+      error += 1.0;
+    }
+
+    count += 1.0;
+
+    iter->next();
+  }
+
+  return error / count;
 }
 }  // namespace rf

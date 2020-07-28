@@ -6,9 +6,7 @@
 #include <rf/split_candidate.h>
 #include <rf/train_set.h>
 
-#include <algorithm>
 #include <memory>
-#include <unordered_map>
 
 namespace rf {
 
@@ -16,6 +14,7 @@ template <typename Data>
 class TreeNode {
  public:
   virtual LabelDistribution classify(Data const&) const noexcept = 0;
+  virtual ~TreeNode() {}
 };
 
 template <typename Data>
@@ -75,42 +74,19 @@ class Tree {
   NodePtr<Data> root_{nullptr};
 };
 
+/**
+ *  Train a single decision tree.
+ */
 template <typename SplitCandidate, typename InputData>
 Tree<InputData> trainTree(TrainSet<InputData>& train,
                           TrainSet<InputData>& validation,
                           TreeParameters stoppingCriteria);
 
+/**
+ *  Returns the classification error from the input set.
+ */
 template <typename Classifier, typename Data>
-double evaluateTree(Classifier const& tree, rf::TrainSet<Data>& test) {
-  double error = 0.0;
-  double count = 0.0;
-  auto iter = test.iter();
-
-  auto maxProb = [](auto const& p, auto const& g) {
-    return p.second < g.second;
-  };
-
-  while (true) {
-    auto value = iter->value();
-    if (!value.has_value()) {
-      break;
-    }
-
-    auto const& trainExample = value.value();
-    auto const dist = tree.classify(trainExample.first);
-
-    const auto maxElement = std::max_element(dist.begin(), dist.end(), maxProb);
-    if (maxElement->first != trainExample.second) {
-      error += 1.0;
-    }
-
-    count += 1.0;
-
-    iter->next();
-  }
-
-  return error / count;
-}
+double evaluateTree(Classifier const& tree, rf::TrainSet<Data>& test);
 
 }  // namespace rf
 

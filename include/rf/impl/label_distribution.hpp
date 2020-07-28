@@ -17,6 +17,8 @@ LabelDistribution::LabelDistribution(InputIterator begin, InputIterator end) {
   for (auto& cls : dist_) {
     cls.second /= total;
   }
+
+  updateMaxProb();
 }
 
 }  // namespace rf

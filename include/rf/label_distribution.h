@@ -21,9 +21,6 @@ class LabelDistribution {
   template <typename InputIterator>
   LabelDistribution(InputIterator begin, InputIterator end);
 
-  auto begin() const noexcept { return dist_.begin(); }
-  auto end() const noexcept { return dist_.end(); }
-
   /**
    *  Combine label distributions is performed to merge the votes from every
    *  tree in the forest
@@ -35,7 +32,14 @@ class LabelDistribution {
    */
   [[nodiscard]] double entropy() const noexcept;
 
+  /**
+   *  Return the <label, prob> pair with max probability.
+   */
+  [[nodiscard]] std::pair<Label, double> maxProb() const noexcept;
+
  private:
+  void updateMaxProb() noexcept;
+  std::pair<Label, double> maxProb_{0, 0.0};
   std::unordered_map<Label, double> dist_{};
 };
 

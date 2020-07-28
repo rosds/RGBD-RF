@@ -144,11 +144,7 @@ int main(int argc, char* argv[]) {
         auto pixel = img.ref(row, col);
         auto dist = forest.classify(pixel);
 
-        auto label = std::max_element(dist.begin(), dist.end(),
-                                      [](auto const& a, auto const& b) {
-                                        return a.second < b.second;
-                                      })
-                         ->first;
+        auto label = dist.maxProb().first;
 
         if (label != 0) {
           pic.at<cv::Vec3b>(row, col) = colors[label];
